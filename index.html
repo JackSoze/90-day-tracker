@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>90 Day Counter</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#1f6f5c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="90 Days">
+<style>
+:root{
+  --bg:#eef1ea; --surface:#ffffff; --ink:#1d2b26; --muted:#6b7a73;
+  --empty:#dfe5dc; --done:#1f6f5c; --done-ink:#ffffff; --ring:#c9892f;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141b18; --surface:#1c2622; --ink:#e8efe9; --muted:#8fa097;
+    --empty:#2a3631; --done:#3fb596; --done-ink:#0f1a16; --ring:#e0a64f;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141b18; --surface:#1c2622; --ink:#e8efe9; --muted:#8fa097;
+  --empty:#2a3631; --done:#3fb596; --done-ink:#0f1a16; --ring:#e0a64f;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+  display:flex; justify-content:center; padding:20px 16px 40px;
+}
+main{width:100%; max-width:420px}
+.grid{background:var(--surface); border-radius:24px; padding:18px 14px}
+.row{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.wk{width:22px; font-size:.7rem; color:var(--muted); text-align:right; flex:none}
+.days{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; flex:1}
+.dh{text-align:center; font-size:.7rem; font-weight:600; color:var(--muted)}
+.d{
+  aspect-ratio:1; border-radius:50%; border:0; padding:0; cursor:pointer;
+  background:var(--empty); color:var(--muted); font-weight:600; font-size:.85rem; line-height:1; font-family:inherit;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  transition:background .15s, transform .1s;
+}
+.d:active{transform:scale(.9)}
+.d.on{background:var(--done); color:var(--done-ink)}
+.d small{font-size:.55rem; font-weight:500; opacity:.8}
+.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--ring)}
+.d.today{outline:1.5px solid rgba(240,138,36,.55); outline-offset:2px}
+.d svg{width:55%; height:55%}
+.bar{height:12px; border-radius:99px; background:var(--empty); margin:18px 0 2px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; border-radius:99px; transition:width .3s, background-size .3s}
+.cnt{text-align:center; margin-top:12px; font-size:.95rem; font-weight:600; color:var(--muted)}
+.clr{display:block; margin:16px auto 0; padding:8px 18px; border:1px solid var(--muted); border-radius:99px; background:none; color:var(--muted); font:inherit; font-size:.85rem; cursor:pointer}
+:focus-visible{outline:3px solid var(--ring); outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <section class="grid" id="grid" aria-label="Days"></section>
+</main>
+<script>
+(function(){
+  var KEY="counter90:v1", TOTAL=90, MILES=[7,30,60,90];
+  var done=new Array(TOTAL).fill(false);
+  try{
+    var s=localStorage.getItem(KEY);
+    if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
+  }catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
+
+  // Day 1 is fixed to 4 Nov 2026. Change (year, month 0-11, day) to move it.
+  var start=new Date(2026,10,4);
+  var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function dateOf(i){return new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);}
+
+  var grid=document.getElementById("grid"), btns=[];
+  var check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  // Weekday header, rotated so it matches the start date
+  var hrow=document.createElement("div"); hrow.className="row";
+  var hlab=document.createElement("div"); hlab.className="wk";
+  var hdays=document.createElement("div"); hdays.className="days";
+  "SMTWTFS".split("").map(function(_,k,a){return a[(k+start.getDay())%7];}).forEach(function(l){
+    var h=document.createElement("div"); h.className="dh"; h.textContent=l; hdays.appendChild(h);
+  });
+  hrow.appendChild(hlab); hrow.appendChild(hdays); grid.appendChild(hrow);
+
+  // Weeks of 7 days
+  for(var w=0; w*7<TOTAL; w++){
+    var row=document.createElement("div"); row.className="row";
+    var lab=document.createElement("div"); lab.className="wk"; lab.textContent="W"+(w+1);
+    var days=document.createElement("div"); days.className="days";
+    for(var c=0; c<7; c++){
+      var i=w*7+c;
+      if(i>=TOTAL){days.appendChild(document.createElement("div")); continue;}
+      (function(i){
+        var b=document.createElement("button"); b.className="d"; b.type="button";
+        if(MILES.indexOf(i+1)>-1) b.classList.add("mile");
+        b.addEventListener("click",function(){done[i]=!done[i]; save(); render();});
+        days.appendChild(b); btns[i]=b;
+      })(i);
+    }
+    row.appendChild(lab); row.appendChild(days); grid.appendChild(row);
+  }
+
+  var barEl=document.createElement("div"); barEl.className="bar"; barEl.setAttribute("role","progressbar");
+  var fill=document.createElement("i"); barEl.appendChild(fill); grid.appendChild(barEl);
+  var cnt=document.createElement("div"); cnt.className="cnt"; grid.appendChild(cnt);
+
+  // Clear button (tap twice to confirm). Delete this block and the .clr CSS rule to remove it.
+  var clr=document.createElement("button"); clr.type="button"; clr.className="clr"; clr.textContent="Clear"; grid.appendChild(clr);
+  var armed=false, tm;
+  clr.addEventListener("click",function(){
+    if(!armed){
+      armed=true; clr.textContent="Tap again to clear";
+      clearTimeout(tm); tm=setTimeout(function(){armed=false; clr.textContent="Clear";},3000);
+    }else{
+      armed=false; clearTimeout(tm); clr.textContent="Clear";
+      done=new Array(TOTAL).fill(false); save(); render();
+    }
+  });
+
+  function todayIdx(){
+    var n=new Date();
+    var t=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+    return Math.round((t-start)/86400000);
+  }
+
+  function render(){
+    var ti=todayIdx();
+    for(var i=0;i<TOTAL;i++){
+      btns[i].classList.toggle("today",i===ti&&!done[i]);
+      if(i===ti) btns[i].setAttribute("aria-current","date"); else btns[i].removeAttribute("aria-current");
+      btns[i].classList.toggle("on",done[i]);
+      var dt=dateOf(i);
+      btns[i].innerHTML=done[i]?check:"<span>"+dt.getDate()+"</span><small>"+MON[dt.getMonth()]+"</small>";
+      btns[i].setAttribute("aria-label",dt.getDate()+" "+MON[dt.getMonth()]+(done[i]?", done":", not done"));
+      btns[i].setAttribute("aria-pressed",done[i]);
+    }
+    var c=done.filter(Boolean).length;
+    fill.style.width=(c/TOTAL*100)+"%";
+    fill.style.backgroundImage="linear-gradient(90deg,hsl(0,90%,52%) 0%,hsl(52,100%,52%) 50%,hsl(145,75%,40%) 100%)";
+    fill.style.backgroundRepeat="no-repeat";
+    fill.style.backgroundSize=(c?10000/(c/TOTAL*100):100)+"% 100%";
+    cnt.textContent=c+" of "+TOTAL+" days";
+    barEl.setAttribute("aria-valuenow",c); barEl.setAttribute("aria-valuemax",TOTAL);
+  }
+
+  render();
+  document.addEventListener("visibilitychange",function(){if(!document.hidden) render();});
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+  }
+})();
+</script>
+</body>
+</html>
