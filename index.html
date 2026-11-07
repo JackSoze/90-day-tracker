@@ -4,13 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>90 Day Counter</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="theme-color" content="#1f6f5c">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="90 Days">
 <style>
 :root{
   --bg:#eef1ea; --surface:#ffffff; --ink:#1d2b26; --muted:#6b7a73;
@@ -37,15 +30,21 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
-  display:flex; justify-content:center; padding:20px 16px 40px;
+  display:flex; justify-content:center; align-items:center; min-height:100dvh; padding:20px 16px;
 }
+.hd{text-align:center; margin:0 0 18px}
+.hd h1{margin:0; font-size:1.6rem; font-weight:700; letter-spacing:.01em}
+.hd p{margin:6px 0 0; font-size:.85rem; color:var(--muted)}
+.ft{text-align:center; margin:18px 0 0; font-size:.85rem; color:var(--muted); line-height:1.4}
+.ft b{color:var(--ink); font-weight:600}
 main{width:100%; max-width:420px}
+.bar{height:12px; border-radius:99px; background:var(--empty); margin:18px 0 2px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; background:var(--done); border-radius:99px; transition:width .3s, background-size .3s}
 .grid{background:var(--surface); border-radius:24px; padding:18px 14px}
 .row{display:flex; align-items:center; gap:8px; margin-bottom:8px}
 .row:last-child{margin-bottom:0}
 .wk{width:22px; font-size:.7rem; color:var(--muted); text-align:right; flex:none}
 .days{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; flex:1}
-.dh{text-align:center; font-size:.7rem; font-weight:600; color:var(--muted)}
 .d{
   aspect-ratio:1; border-radius:50%; border:0; padding:0; cursor:pointer;
   background:var(--empty); color:var(--muted); font-weight:600; font-size:.85rem; line-height:1; font-family:inherit;
@@ -55,20 +54,23 @@ main{width:100%; max-width:420px}
 .d:active{transform:scale(.9)}
 .d.on{background:var(--done); color:var(--done-ink)}
 .d small{font-size:.55rem; font-weight:500; opacity:.8}
-.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--ring)}
-.d.today{outline:1.5px solid rgba(240,138,36,.55); outline-offset:2px}
-.d svg{width:55%; height:55%}
-.bar{height:12px; border-radius:99px; background:var(--empty); margin:18px 0 2px; overflow:hidden}
-.bar i{display:block; height:100%; width:0; border-radius:99px; transition:width .3s, background-size .3s}
+.cell{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0}
+.cell .d{width:100%}
 .cnt{text-align:center; margin-top:12px; font-size:.95rem; font-weight:600; color:var(--muted)}
 .clr{display:block; margin:16px auto 0; padding:8px 18px; border:1px solid var(--muted); border-radius:99px; background:none; color:var(--muted); font:inherit; font-size:.85rem; cursor:pointer}
+.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--ring)}
+.dh{text-align:center; font-size:.7rem; font-weight:600; color:var(--muted)}
+.d.today{outline:1.5px solid rgba(240,138,36,.55); outline-offset:2px}
+.d svg{width:55%; height:55%}
 :focus-visible{outline:3px solid var(--ring); outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <main>
+  <header class="hd"><h1>90 Days</h1><p id="sub"></p></header>
   <section class="grid" id="grid" aria-label="Days"></section>
+  <p class="ft" id="ft"></p>
 </main>
 <script>
 (function(){
@@ -79,32 +81,26 @@ main{width:100%; max-width:420px}
     if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
   }catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
-
-  // Day 1 is fixed to 4 Nov 2026. Change (year, month 0-11, day) to move it.
+  // Day 1 is fixed to 4 Nov 2026. Change the numbers below (year, month 0-11, day) to move it.
   var start=new Date(2026,10,4);
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function dateOf(i){return new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);}
 
   var grid=document.getElementById("grid"), btns=[];
   var check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-
-  // Weekday header, rotated so it matches the start date
+  var OFFSET=0;
   var hrow=document.createElement("div"); hrow.className="row";
   var hlab=document.createElement("div"); hlab.className="wk";
   var hdays=document.createElement("div"); hdays.className="days";
-  "SMTWTFS".split("").map(function(_,k,a){return a[(k+start.getDay())%7];}).forEach(function(l){
-    var h=document.createElement("div"); h.className="dh"; h.textContent=l; hdays.appendChild(h);
-  });
+  "SMTWTFS".split("").map(function(_,k,a){return a[(k+start.getDay())%7];}).forEach(function(l){var h=document.createElement("div"); h.className="dh"; h.textContent=l; hdays.appendChild(h);});
   hrow.appendChild(hlab); hrow.appendChild(hdays); grid.appendChild(hrow);
-
-  // Weeks of 7 days
-  for(var w=0; w*7<TOTAL; w++){
+  for(var w=0; w*7<TOTAL+OFFSET; w++){
     var row=document.createElement("div"); row.className="row";
     var lab=document.createElement("div"); lab.className="wk"; lab.textContent="W"+(w+1);
     var days=document.createElement("div"); days.className="days";
     for(var c=0; c<7; c++){
-      var i=w*7+c;
-      if(i>=TOTAL){days.appendChild(document.createElement("div")); continue;}
+      var i=w*7+c-OFFSET;
+      if(i<0||i>=TOTAL){days.appendChild(document.createElement("div")); continue;}
       (function(i){
         var b=document.createElement("button"); b.className="d"; b.type="button";
         if(MILES.indexOf(i+1)>-1) b.classList.add("mile");
@@ -114,12 +110,10 @@ main{width:100%; max-width:420px}
     }
     row.appendChild(lab); row.appendChild(days); grid.appendChild(row);
   }
-
   var barEl=document.createElement("div"); barEl.className="bar"; barEl.setAttribute("role","progressbar");
   var fill=document.createElement("i"); barEl.appendChild(fill); grid.appendChild(barEl);
   var cnt=document.createElement("div"); cnt.className="cnt"; grid.appendChild(cnt);
-
-  // Clear button (tap twice to confirm). Delete this block and the .clr CSS rule to remove it.
+  // TEMP clear button: delete this block and the .clr CSS rule to remove it
   var clr=document.createElement("button"); clr.type="button"; clr.className="clr"; clr.textContent="Clear"; grid.appendChild(clr);
   var armed=false, tm;
   clr.addEventListener("click",function(){
@@ -156,13 +150,14 @@ main{width:100%; max-width:420px}
     fill.style.backgroundSize=(c?10000/(c/TOTAL*100):100)+"% 100%";
     cnt.textContent=c+" of "+TOTAL+" days";
     barEl.setAttribute("aria-valuenow",c); barEl.setAttribute("aria-valuemax",TOTAL);
+    var s0=dateOf(0), s1=dateOf(TOTAL-1);
+    document.getElementById("sub").textContent=s0.getDate()+" "+MON[s0.getMonth()]+" – "+s1.getDate()+" "+MON[s1.getMonth()]+(ti>=0&&ti<TOTAL?" · Day "+(ti+1):"");
+    var left=TOTAL-c;
+    document.getElementById("ft").innerHTML=left?"<b>"+left+"</b> days to go. One tap a day.":"<b>All 90 done.</b> Well finished.";
   }
 
   render();
   document.addEventListener("visibilitychange",function(){if(!document.hidden) render();});
-  if("serviceWorker" in navigator){
-    window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
-  }
 })();
 </script>
 </body>
