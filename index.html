@@ -149,14 +149,13 @@ main{width:100%; max-width:420px}
     cnt.textContent=c+" of "+TOTAL+" days";
     barEl.setAttribute("aria-valuenow",c); barEl.setAttribute("aria-valuemax",TOTAL);
     var s0=dateOf(0), s1=dateOf(TOTAL-1);
-    document.getElementById("sub").textContent=s0.getDate()+" "+MON[s0.getMonth()]+" – "+s1.getDate()+" "+MON[s1.getMonth()]+(ti>=0&&ti<TOTAL?" · Day "+(ti+1):"");
-    var left=TOTAL-c;
-    document.getElementById("ft").innerHTML=left?"<b>"+left+"</b> days to go. One tap a day.":"<b>All 90 done.</b> Well finished.";
+    document.getElementById("sub").textContent=s0.getDate()+" "+MON[s0.getMonth()]+" – "+s1.getDate()+" "+MON[s1.getMonth()];
+    document.getElementById("ft").innerHTML=c<TOTAL?"Tap today\u2019s circle to mark it done.":"<b>All 90 done.</b> Well finished.";
   }
 
   function fit(){
     var main=document.querySelector("main"), cs=getComputedStyle(document.body);
-    var avail=document.body.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    var avail=Math.min(document.body.clientHeight,window.innerHeight)-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-6;
     var inner=Math.min(document.body.clientWidth-32,420)-24-30;
     var cell=Math.min(56,Math.floor((inner-30)/7));
     for(;cell>18;cell--){
@@ -165,6 +164,8 @@ main{width:100%; max-width:420px}
     }
   }
   render(); fit();
+  window.addEventListener("load",fit);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
   window.addEventListener("resize",fit);
   document.addEventListener("visibilitychange",function(){if(!document.hidden){render(); fit();}});
 })();
