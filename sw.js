@@ -1,28 +1,34 @@
-// Bump CACHE whenever you change any file so installed apps pick up the update.
-var CACHE = "counter90-v3";
-var FILES = ["./", "index.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png"];
+// 90 Day Counter - service worker
+// Network-first: always tries the latest files from GitHub Pages,
+// falls back to the cache only when offline.
+// Bump this version each time you change the app to be safe.
+const CACHE = 'counter-v3';
 
-self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }));
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", function (e) {
-  e.waitUntil(
-    caches.keys().then(function (keys) {
-      return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
-    }).then(function () { return self.clients.claim(); })
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Network first, fall back to cache when offline, so updates show up right away.
-self.addEventListener("fetch", function (e) {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(e.request).then(function (res) {
-      var copy = res.clone();
-      caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
-      return res;
-    }).catch(function () { return caches.match(e.request); })
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+
+  event.respondWith(
+    fetch(req, { cache: 'no-store' })
+      .then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
   );
 });
