@@ -3,24 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1426">
+<link rel="manifest" href="manifest.json">
 <title>90 Day Counter</title>
 <style>
 :root{
-  --bg:#eef1ea; --surface:#ffffff; --ink:#1d2b26; --muted:#6b7a73;
-  --empty:#dfe5dc; --done:#1f6f5c; --done-ink:#ffffff; --ring:#c9892f;
+  --bg:#0b1426; --surface:#131f38; --ink:#e6edf7; --muted:#9fb0cc;
+  --empty:#273858; --done:#2dd4bf; --done-ink:#06232a; --ring:#e8b04a;
   box-sizing:border-box; --cell:40px;
-  color-scheme:light;
+  color-scheme:dark;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#141b18; --surface:#1c2622; --ink:#e8efe9; --muted:#8fa097;
-    --empty:#2a3631; --done:#3fb596; --done-ink:#0f1a16; --ring:#e0a64f;
+    --bg:#0b1426; --surface:#131f38; --ink:#e6edf7; --muted:#9fb0cc;
+    --empty:#273858; --done:#2dd4bf; --done-ink:#06232a; --ring:#e8b04a;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#141b18; --surface:#1c2622; --ink:#e8efe9; --muted:#8fa097;
-  --empty:#2a3631; --done:#3fb596; --done-ink:#0f1a16; --ring:#e0a64f;
+  --bg:#0b1426; --surface:#131f38; --ink:#e6edf7; --muted:#9fb0cc;
+  --empty:#273858; --done:#2dd4bf; --done-ink:#06232a; --ring:#e8b04a;
   color-scheme:dark;
 }
 html{height:100%; overflow:hidden}
@@ -28,13 +30,12 @@ html{height:100%; overflow:hidden}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
-  display:flex; justify-content:center; align-items:center; height:100dvh; overflow:hidden; padding:calc(10px + env(safe-area-inset-top,0px)) 16px calc(10px + env(safe-area-inset-bottom,0px));
+  display:flex; justify-content:center; align-items:center; height:100dvh; overflow:hidden;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 16px calc(10px + env(safe-area-inset-bottom,0px));
 }
 .hd{text-align:center; margin:0 0 10px}
 .hd h1{margin:0; font-size:1.4rem; font-weight:700; letter-spacing:.01em}
 .hd p{margin:6px 0 0; font-size:.85rem; color:var(--muted)}
-.ft{text-align:center; margin:10px 0 0; font-size:.85rem; color:var(--muted); line-height:1.4}
-.ft b{color:var(--ink); font-weight:600}
 main{width:100%; max-width:420px}
 .bar{height:12px; border-radius:99px; background:var(--empty); margin:10px 0 0; overflow:hidden}
 .bar i{display:block; height:100%; width:0; background:var(--done); border-radius:99px; transition:width .3s, background-size .3s}
@@ -50,59 +51,121 @@ main{width:100%; max-width:420px}
   transition:background .15s, transform .1s;
 }
 .d:active{transform:scale(.9)}
+.d{-webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; touch-action:manipulation}
+.d:focus:not(.today){outline:none}
 .d.on{background:var(--done); color:var(--done-ink)}
 .d small{font-size:calc(var(--cell)*.2); font-weight:500; opacity:.8}
-.cell{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0}
-.cell .d{width:100%}
 .cnt{text-align:center; margin-top:8px; font-size:.95rem; font-weight:600; color:var(--muted)}
-.clr{display:block; margin:10px auto 0; padding:6px 16px; border:1px solid var(--muted); border-radius:99px; background:none; color:var(--muted); font:inherit; font-size:.85rem; cursor:pointer}
-.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--ring)}
+.clr{display:block; margin:10px auto 0; padding:8px 22px; border:1.5px solid var(--muted); border-radius:99px; background:none; color:var(--ink); font:inherit; font-size:.85rem; cursor:pointer}
+.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 3px rgba(232,176,74,.65)}
 .dh{text-align:center; font-size:.7rem; font-weight:600; color:var(--muted)}
-.d.today{outline:1.5px solid rgba(240,138,36,.55); outline-offset:2px}
+.d.today{outline:2px dotted #ff3b3b; outline-offset:1px; background:#2e4472; color:var(--ink); animation:rgbcycle 4s linear infinite}
+@keyframes rgbcycle{0%{outline-color:#ff3b3b}33%{outline-color:#3bff6a}66%{outline-color:#3b8cff}100%{outline-color:#ff3b3b}}
 .d svg{width:55%; height:55%}
+.jb{display:block; margin:10px auto 0; padding:8px 22px; border:0; border-radius:99px; background:var(--done); color:var(--done-ink); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer}
 :focus-visible{outline:3px solid var(--ring); outline-offset:2px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* journal page */
+.jp{position:fixed; inset:0; z-index:20; background:var(--bg); overflow-y:auto; padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.jp[hidden]{display:none}
+.jpin{max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
+.jtop{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.jtop h2{margin:0; font-size:1.2rem; flex:1; text-align:center}
+.tb{border:0; background:var(--empty); color:var(--ink); padding:8px 14px; border-radius:99px; font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; min-width:64px}
+.tb[hidden]{display:block!important; visibility:hidden}
+[hidden]{display:none!important}
+.v{display:flex; flex-direction:column; gap:10px}
+.v p{margin:0; font-size:.9rem; color:var(--muted); line-height:1.45}
+.v input,#jt{width:100%; border:1px solid var(--empty); border-radius:14px; padding:12px; font:inherit; font-size:1rem; background:var(--surface); color:var(--ink)}
+#jt{height:42dvh; resize:none; line-height:1.45}
+.sv{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.sv span{font-size:.85rem; color:var(--done); font-weight:600; min-height:1.2em}
+.sv .pb{padding:10px 28px}
+.pb{padding:12px; border:0; border-radius:99px; background:var(--done); color:var(--done-ink); font:inherit; font-size:.95rem; font-weight:600; cursor:pointer}
+.err{color:#c0392b!important; min-height:1.2em}
+.ent{display:block; width:100%; text-align:left; background:var(--surface); border:0; border-radius:16px; padding:12px 14px; font:inherit; color:var(--ink); cursor:pointer}
+.ent b{display:block; font-size:.85rem; margin-bottom:4px}
+.ent span{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:var(--muted); font-size:.9rem; line-height:1.4}
+.jh{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.jh button{border:0; background:var(--empty); color:var(--ink); width:38px; height:38px; border-radius:50%; font-size:1.3rem; line-height:1; cursor:pointer}
+.jh button:disabled{opacity:.35}
+.jh span{flex:1; text-align:center; font-weight:600; font-size:.95rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 </style>
 </head>
 <body>
 <main>
   <header class="hd"><h1>90 Days</h1><p id="sub"></p></header>
   <section class="grid" id="grid" aria-label="Days"></section>
-  <p class="ft" id="ft"></p>
+  <button type="button" class="jb" id="jb">&#9998; Journal</button>
 </main>
+<div class="jp" id="jp" hidden>
+  <div class="jpin">
+    <div class="jtop">
+      <button type="button" class="tb" id="jback">&lsaquo; Back</button>
+      <h2>Journal</h2>
+      <button type="button" class="tb" id="jlock" hidden>Lock</button>
+    </div>
+    <div class="v" id="vLock">
+      <p id="lmsg"></p>
+      <input type="password" id="pw1" placeholder="Password" autocomplete="off">
+      <input type="password" id="pw2" placeholder="Confirm password" autocomplete="off" hidden>
+      <p class="err" id="lerr"></p>
+      <button type="button" class="pb" id="lgo"></button>
+    </div>
+    <div class="v" id="vList" hidden>
+      <button type="button" class="pb" id="jnew">+ Write today</button>
+      <div class="v" id="jlist"></div>
+    </div>
+    <div class="v" id="vEdit" hidden>
+      <div class="jh"><button type="button" id="jprev" aria-label="Previous day">&lsaquo;</button><span id="jdate"></span><button type="button" id="jnext" aria-label="Next day">&rsaquo;</button></div>
+      <textarea id="jt" placeholder="How did today go?" aria-label="Journal entry"></textarea>
+      <div class="sv"><span id="jst" aria-live="polite"></span><button type="button" class="pb" id="jsave">Save</button></div>
+    </div>
+  </div>
+</div>
 <script>
 (function(){
-  var KEY="counter90:v1", TOTAL=90, MILES=[7,30,60,90];
+  var KEY="counter90:v2", TOTAL=90, MILES=[7,30,60,90], JOFF=5;
   var done=new Array(TOTAL).fill(false);
   try{
     var s=localStorage.getItem(KEY);
     if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
   }catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
-  // Day 1 is fixed to 4 Nov 2026. Change the numbers below (year, month 0-11, day) to move it.
-  var start=new Date(2026,10,4);
+  // Day 1 is fixed to 9 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
+  var start=new Date(2026,10,9);
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var DAYN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   function dateOf(i){return new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);}
+  function lbl(i){var d=dateOf(i); return DAYN[d.getDay()]+" "+d.getDate()+" "+MON[d.getMonth()]+(i>=0?" \u00b7 Day "+(i+1):"");}
+  function todayIdx(){
+    var n=new Date();
+    var t=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+    return Math.round((t-start)/86400000);
+  }
 
   var grid=document.getElementById("grid"), btns=[];
   var check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-  var OFFSET=0;
   var hrow=document.createElement("div"); hrow.className="row";
   var hlab=document.createElement("div"); hlab.className="wk";
   var hdays=document.createElement("div"); hdays.className="days";
   "SMTWTFS".split("").map(function(_,k,a){return a[(k+start.getDay())%7];}).forEach(function(l){var h=document.createElement("div"); h.className="dh"; h.textContent=l; hdays.appendChild(h);});
   hrow.appendChild(hlab); hrow.appendChild(hdays); grid.appendChild(hrow);
-  for(var w=0; w*7<TOTAL+OFFSET; w++){
+  for(var w=0; w*7<TOTAL; w++){
     var row=document.createElement("div"); row.className="row";
     var lab=document.createElement("div"); lab.className="wk"; lab.textContent="W"+(w+1);
     var days=document.createElement("div"); days.className="days";
     for(var c=0; c<7; c++){
-      var i=w*7+c-OFFSET;
-      if(i<0||i>=TOTAL){days.appendChild(document.createElement("div")); continue;}
+      var i=w*7+c;
+      if(i>=TOTAL){days.appendChild(document.createElement("div")); continue;}
       (function(i){
         var b=document.createElement("button"); b.className="d"; b.type="button";
         if(MILES.indexOf(i+1)>-1) b.classList.add("mile");
-        b.addEventListener("click",function(){done[i]=!done[i]; save(); render();});
+        var lt=null, lp=false;
+        b.addEventListener("pointerdown",function(){lp=false; clearTimeout(lt); lt=setTimeout(function(){lp=true; openJournal(i);},500);});
+        ["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,function(){clearTimeout(lt);});});
+        b.addEventListener("contextmenu",function(e){e.preventDefault();});
+        b.addEventListener("click",function(){ if(lp){lp=false; return;} done[i]=!done[i]; save(); render();});
         days.appendChild(b); btns[i]=b;
       })(i);
     }
@@ -111,7 +174,7 @@ main{width:100%; max-width:420px}
   var barEl=document.createElement("div"); barEl.className="bar"; barEl.setAttribute("role","progressbar");
   var fill=document.createElement("i"); barEl.appendChild(fill); grid.appendChild(barEl);
   var cnt=document.createElement("div"); cnt.className="cnt"; grid.appendChild(cnt);
-  // TEMP clear button: delete this block and the .clr CSS rule to remove it
+  // TEMP clear button: delete this block and the .clr CSS rule to remove it (clears day marks only, not the journal)
   var clr=document.createElement("button"); clr.type="button"; clr.className="clr"; clr.textContent="Clear"; grid.appendChild(clr);
   var armed=false, tm;
   clr.addEventListener("click",function(){
@@ -123,12 +186,6 @@ main{width:100%; max-width:420px}
       done=new Array(TOTAL).fill(false); save(); render();
     }
   });
-
-  function todayIdx(){
-    var n=new Date();
-    var t=new Date(n.getFullYear(),n.getMonth(),n.getDate());
-    return Math.round((t-start)/86400000);
-  }
 
   function render(){
     var ti=todayIdx();
@@ -143,19 +200,141 @@ main{width:100%; max-width:420px}
     }
     var c=done.filter(Boolean).length;
     fill.style.width=(c/TOTAL*100)+"%";
-    fill.style.backgroundImage="linear-gradient(90deg,hsl(0,90%,52%) 0%,hsl(52,100%,52%) 50%,hsl(145,75%,40%) 100%)";
+    fill.style.backgroundImage="linear-gradient(90deg,#4f8cff 0%,#2dd4bf 100%)";
     fill.style.backgroundRepeat="no-repeat";
     fill.style.backgroundSize=(c?10000/(c/TOTAL*100):100)+"% 100%";
     cnt.textContent=c+" of "+TOTAL+" days";
     barEl.setAttribute("aria-valuenow",c); barEl.setAttribute("aria-valuemax",TOTAL);
     var s0=dateOf(0), s1=dateOf(TOTAL-1);
-    document.getElementById("sub").textContent=s0.getDate()+" "+MON[s0.getMonth()]+" – "+s1.getDate()+" "+MON[s1.getMonth()];
-    document.getElementById("ft").innerHTML=c<TOTAL?"Tap today\u2019s circle to mark it done.":"<b>All 90 done.</b> Well finished.";
+    document.getElementById("sub").textContent=s0.getDate()+" "+MON[s0.getMonth()]+" \u2013 "+s1.getDate()+" "+MON[s1.getMonth()];
   }
+
+  /* ---------- Journal: separate page, password protected, encrypted on this device ---------- */
+  var VK="counter90:jv2", OLDK="counter90:journal:v1";
+  var enc=new TextEncoder(), dec=new TextDecoder();
+  var ckey=null, jr={}, cur=0, pending=null, saveT=null;
+  var $=function(id){return document.getElementById(id);};
+  var jp=$("jp"), vLock=$("vLock"), vList=$("vList"), vEdit=$("vEdit"), ta=$("jt"), pw1=$("pw1"), pw2=$("pw2"), lerr=$("lerr"), lgo=$("lgo"), jlock=$("jlock");
+
+  function b64(buf){var a=new Uint8Array(buf),s="";for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
+  function unb64(s){var t=atob(s),a=new Uint8Array(t.length);for(var i=0;i<t.length;i++)a[i]=t.charCodeAt(i);return a;}
+  function derive(pw,salt){
+    return crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]).then(function(m){
+      return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:200000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+    });
+  }
+  function seal(k,text){
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({name:"AES-GCM",iv:iv},k,enc.encode(text)).then(function(ct){return {iv:b64(iv),ct:b64(ct)};});
+  }
+  function unseal(k,o){
+    return crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},k,unb64(o.ct)).then(function(p){return dec.decode(p);});
+  }
+  function readV(){try{return JSON.parse(localStorage.getItem(VK));}catch(e){return null;}}
+  function persist(){
+    clearTimeout(saveT);
+    if(!ckey) return Promise.resolve();
+    var v=readV(); if(!v) return Promise.resolve();
+    return seal(ckey,JSON.stringify(jr)).then(function(d){v.data=d; try{localStorage.setItem(VK,JSON.stringify(v));}catch(e){}});
+  }
+  function view(name){
+    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit";
+    jlock.hidden=name==="lock";
+  }
+  function prepLock(){
+    var has=!!readV();
+    pw1.value=""; pw2.value=""; lerr.textContent="";
+    pw2.hidden=has;
+    $("lmsg").textContent=has?"Enter your password to open the journal.":"Create a password for your journal. Entries are encrypted on this phone. If you forget the password, they cannot be recovered.";
+    lgo.textContent=has?"Unlock":"Create password";
+    view("lock");
+    if(!(window.crypto&&crypto.subtle)){lerr.textContent="The journal needs a secure (https) page to run."; lgo.disabled=true;} else lgo.disabled=false;
+  }
+  function showList(){
+    var list=$("jlist"); list.innerHTML="";
+    var ids=Object.keys(jr).filter(function(k){return jr[k]&&jr[k].trim();}).map(Number).sort(function(a,b){return b-a;});
+    /* journal keys are days since 4 Nov, so old entries stay put; day index = key - JOFF */
+    if(!ids.length){var p=document.createElement("p"); p.textContent="No entries yet."; list.appendChild(p);}
+    ids.forEach(function(i){
+      var b=document.createElement("button"); b.type="button"; b.className="ent";
+      var h=document.createElement("b"); h.textContent=lbl(i-JOFF);
+      var sp=document.createElement("span"); sp.textContent=jr[i];
+      b.appendChild(h); b.appendChild(sp);
+      b.addEventListener("click",function(){openEditor(i-JOFF);});
+      list.appendChild(b);
+    });
+    view("list");
+  }
+  function openEditor(i){
+    cur=Math.max(-JOFF,Math.min(TOTAL-1,i));
+    $("jdate").textContent=lbl(cur);
+    ta.value=jr[cur+JOFF]||""; $("jst").textContent="";
+    $("jprev").disabled=cur===-JOFF; $("jnext").disabled=cur===TOTAL-1;
+    view("edit");
+  }
+  function leaveEditor(){
+    if(jr[cur+JOFF]!==undefined&&!jr[cur+JOFF].trim()) delete jr[cur+JOFF];
+    return persist();
+  }
+  function lockNow(){
+    ckey=null; jr={}; pending=null; ta.value=""; pw1.value=""; pw2.value="";
+  }
+  function closeJournal(){
+    var p=ckey?leaveEditor():Promise.resolve();
+    p.then(function(){lockNow(); jp.hidden=true;});
+  }
+  function openJournal(day){
+    pending=(typeof day==="number")?day:null;
+    jp.hidden=false;
+    if(ckey){ if(pending!==null) openEditor(pending); else showList(); }
+    else prepLock();
+  }
+  lgo.addEventListener("click",function(){
+    lerr.textContent="";
+    var pw=pw1.value, v=readV();
+    if(!pw){lerr.textContent="Enter a password."; return;}
+    lgo.disabled=true;
+    var job;
+    if(!v){
+      if(pw.length<4){lerr.textContent="Use at least 4 characters."; lgo.disabled=false; return;}
+      if(pw!==pw2.value){lerr.textContent="Passwords do not match."; lgo.disabled=false; return;}
+      var salt=crypto.getRandomValues(new Uint8Array(16)), init={};
+      try{var old=JSON.parse(localStorage.getItem(OLDK)||"null"); if(old&&typeof old==="object") init=old;}catch(e){}
+      job=derive(pw,salt).then(function(k){
+        return Promise.all([seal(k,"ok"),seal(k,JSON.stringify(init))]).then(function(r){
+          try{localStorage.setItem(VK,JSON.stringify({salt:b64(salt),check:r[0],data:r[1]})); localStorage.removeItem(OLDK);}catch(e){}
+          ckey=k; jr=init;
+        });
+      });
+    }else{
+      job=derive(pw,unb64(v.salt)).then(function(k){
+        return unseal(k,v.check).then(function(){return unseal(k,v.data);}).then(function(txt){ckey=k; jr=JSON.parse(txt)||{};});
+      });
+    }
+    job.then(function(){
+      lgo.disabled=false; pw1.value=""; pw2.value="";
+      if(pending!==null) openEditor(pending); else showList();
+    }).catch(function(){
+      lgo.disabled=false; lerr.textContent=v?"Wrong password.":"Could not create the password.";
+    });
+  });
+  [pw1,pw2].forEach(function(el){el.addEventListener("keydown",function(e){if(e.key==="Enter") lgo.click();});});
+  function setSt(t){$("jst").textContent=t;}
+  ta.addEventListener("input",function(){jr[cur+JOFF]=ta.value; setSt("Saving\u2026"); clearTimeout(saveT); saveT=setTimeout(function(){persist().then(function(){setSt("Saved \u2713");});},400);});
+  $("jsave").addEventListener("click",function(){setSt("Saving\u2026"); leaveEditor().then(function(){setSt(""); showList();});});
+  $("jprev").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur-1);});});
+  $("jnext").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur+1);});});
+  $("jnew").addEventListener("click",function(){var t=todayIdx(); openEditor(t<0?0:t);});
+  $("jback").addEventListener("click",function(){
+    if(!vEdit.hidden){leaveEditor().then(showList);} else closeJournal();
+  });
+  jlock.addEventListener("click",closeJournal);
+  $("jb").addEventListener("click",function(){openJournal();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!jp.hidden) $("jback").click();});
 
   function fit(){
     var main=document.querySelector("main"), cs=getComputedStyle(document.body);
-    var avail=Math.min(document.body.clientHeight,window.innerHeight)-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-6;
+    var avail=document.body.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
     var inner=Math.min(document.body.clientWidth-32,420)-24-30;
     var cell=Math.min(56,Math.floor((inner-30)/7));
     for(;cell>18;cell--){
@@ -164,10 +343,14 @@ main{width:100%; max-width:420px}
     }
   }
   render(); fit();
-  window.addEventListener("load",fit);
-  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
   window.addEventListener("resize",fit);
-  document.addEventListener("visibilitychange",function(){if(!document.hidden){render(); fit();}});
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){ if(!jp.hidden) closeJournal(); }
+    else { render(); fit(); }
+  });
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+  }
 })();
 </script>
 </body>
