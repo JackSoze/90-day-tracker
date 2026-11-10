@@ -3,8 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0b1426">
-<link rel="manifest" href="manifest.json">
 <title>90 Day Counter</title>
 <style>
 :root{
@@ -84,6 +82,9 @@ main{width:100%; max-width:420px}
 .v p{margin:0; font-size:.9rem; color:var(--muted); line-height:1.45}
 .v input,#jt{width:100%; border:1px solid var(--empty); border-radius:14px; padding:12px; font:inherit; font-size:1rem; background:var(--surface); color:var(--ink)}
 #jt{flex:1; min-height:120px; resize:none; line-height:1.45}
+.v select{width:100%; border:1px solid var(--empty); border-radius:14px; padding:12px; font:inherit; font-size:.9rem; background:var(--surface); color:var(--ink)}
+.v p.q{color:var(--ink); font-weight:600}
+.v input.pin{-webkit-text-security:disc; text-security:disc; letter-spacing:.25em}
 .sv{display:flex; align-items:center; justify-content:space-between; gap:12px}
 .sv span{font-size:.85rem; color:var(--done); font-weight:600; min-height:1.2em}
 .sv .pb{padding:10px 28px}
@@ -111,26 +112,48 @@ main{width:100%; max-width:420px}
       <button type="button" class="tb" id="jback">&lsaquo; Back</button>
       <h2>Journal</h2>
       <button type="button" class="tb" id="jlock" aria-label="Menu" hidden>&#8942;</button>
-      <div class="mn" id="mn" hidden><button type="button" id="jchg">Change password</button></div>
+      <div class="mn" id="mn" hidden><button type="button" id="jchg">Change PIN</button><button type="button" id="jsq">Security questions</button></div>
     </div>
     <div class="v" id="vLock">
       <p id="lmsg"></p>
-      <input type="password" id="pw1" placeholder="Password" autocomplete="off">
-      <input type="password" id="pw2" placeholder="Confirm password" autocomplete="off" hidden>
+      <input type="text" class="pin" id="pw1" name="jcode1" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <input type="text" class="pin" id="pw2" name="jcode2" placeholder="Confirm PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" hidden>
       <p class="err" id="lerr"></p>
       <button type="button" class="pb" id="lgo"></button>
+      <button type="button" class="clr" id="lreset" hidden>Forgot PIN?</button>
     </div>
     <div class="v" id="vList" hidden>
       <button type="button" class="pb" id="jnew">+ Write today</button>
       <div class="v" id="jlist"></div>
     </div>
     <div class="v" id="vPw" hidden>
-      <p>Change your journal password. Your entries stay safe.</p>
-      <input type="password" id="cp0" placeholder="Current password" autocomplete="off">
-      <input type="password" id="cp1" placeholder="New password" autocomplete="off">
-      <input type="password" id="cp2" placeholder="Confirm new password" autocomplete="off">
+      <p id="cpmsg">Change your journal PIN (4 to 8 digits). Your entries stay safe.</p>
+      <input type="text" class="pin" id="cp1" name="jcode4" placeholder="New PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <input type="text" class="pin" id="cp2" name="jcode5" placeholder="Confirm new PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
       <p class="err" id="cperr"></p>
-      <button type="button" class="pb" id="cpgo">Change password</button>
+      <button type="button" class="pb" id="cpgo">Change PIN</button>
+    </div>
+    <div class="v" id="vSq" hidden>
+      <p id="sqmsg"></p>
+      <select id="sqs1" aria-label="Security question 1"></select>
+      <input type="text" id="sqa1" name="jans1" placeholder="Answer 1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <select id="sqs2" aria-label="Security question 2"></select>
+      <input type="text" id="sqa2" name="jans2" placeholder="Answer 2" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <select id="sqs3" aria-label="Security question 3"></select>
+      <input type="text" id="sqa3" name="jans3" placeholder="Answer 3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <p class="err" id="sqerr"></p>
+      <button type="button" class="pb" id="sqgo">Save</button>
+    </div>
+    <div class="v" id="vFg" hidden>
+      <p>Answer your security questions. Get at least 2 of 3 right to set a new PIN.</p>
+      <p class="q" id="fgq1"></p>
+      <input type="text" id="fga1" name="jfg1" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <p class="q" id="fgq2"></p>
+      <input type="text" id="fga2" name="jfg2" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <p class="q" id="fgq3"></p>
+      <input type="text" id="fga3" name="jfg3" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <p class="err" id="fgerr"></p>
+      <button type="button" class="pb" id="fggo">Verify</button>
     </div>
     <div class="v" id="vEdit" hidden>
       <div class="jh"><button type="button" id="jprev" aria-label="Previous day">&lsaquo;</button><span id="jdate"></span><button type="button" id="jnext" aria-label="Next day">&rsaquo;</button></div>
@@ -227,9 +250,9 @@ main{width:100%; max-width:420px}
   }
 
   /* ---------- Journal: separate page, password protected, encrypted on this device ---------- */
-  var VK="counter90:jv2", OLDK="counter90:journal:v1";
+  var VK="counter90:jv2", OLDK="counter90:journal:v1", V3="counter90:jv3";
   var enc=new TextEncoder(), dec=new TextDecoder();
-  var ckey=null, jr={}, cur=0, pending=null, saveT=null, pushed=false;
+  var ckey=null, jr={}, cur=0, pending=null, saveT=null, pushed=false, resetMode=false, sqMode="", pendingPw="", pendingInit={}, fgFails=0;
   var $=function(id){return document.getElementById(id);};
   var jp=$("jp"), vLock=$("vLock"), vList=$("vList"), vEdit=$("vEdit"), ta=$("jt"), pw1=$("pw1"), pw2=$("pw2"), lerr=$("lerr"), lgo=$("lgo"), jlock=$("jlock");
 
@@ -248,22 +271,26 @@ main{width:100%; max-width:420px}
     return crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},k,unb64(o.ct)).then(function(p){return dec.decode(p);});
   }
   function readV(){try{return JSON.parse(localStorage.getItem(VK));}catch(e){return null;}}
+  function readV3(){try{return JSON.parse(localStorage.getItem(V3));}catch(e){return null;}}
+  function pinMode(){try{return localStorage.getItem("counter90:pm")==="1";}catch(e){return false;}}
+  function setPinMode(){try{localStorage.setItem("counter90:pm","1");}catch(e){}}
   function persist(){
     clearTimeout(saveT);
     if(!ckey) return Promise.resolve();
-    var v=readV(); if(!v) return Promise.resolve();
-    return seal(ckey,JSON.stringify(jr)).then(function(d){v.data=d; try{localStorage.setItem(VK,JSON.stringify(v));}catch(e){}});
+    var v=readV3(); if(!v) return Promise.resolve();
+    return seal(ckey,JSON.stringify(jr)).then(function(d){v.data=d; try{localStorage.setItem(V3,JSON.stringify(v));}catch(e){}});
   }
   function view(name){
-    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit"; $("vPw").hidden=name!=="pw";
+    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit"; $("vPw").hidden=name!=="pw"; $("vSq").hidden=name!=="sq"; $("vFg").hidden=name!=="fg";
     jlock.hidden=name!=="list"; $("mn").hidden=true;
   }
   function prepLock(){
-    var has=!!readV();
+    var has=!!(readV3()||readV());
     pw1.value=""; pw2.value=""; lerr.textContent="";
-    pw2.hidden=has;
-    $("lmsg").textContent=has?"Enter your password to open the journal.":"Create a password for your journal. Entries are encrypted on this phone. If you forget the password, they cannot be recovered.";
-    lgo.textContent=has?"Unlock":"Create password";
+    pw2.hidden=has; $("lreset").hidden=!has;
+    pw1.setAttribute("inputmode",(!has||pinMode())?"numeric":"text");
+    $("lmsg").textContent=has?"Enter your PIN to open the journal.":"Create a PIN (4 to 8 digits) for your journal. Your entries stay on this phone.";
+    lgo.textContent=has?"Unlock":"Create PIN";
     view("lock");
     if(!(window.crypto&&crypto.subtle)){lerr.textContent="The journal needs a secure (https) page to run."; lgo.disabled=true;} else lgo.disabled=false;
   }
@@ -294,7 +321,7 @@ main{width:100%; max-width:420px}
     return persist();
   }
   function lockNow(){
-    ckey=null; jr={}; pending=null; ta.value=""; pw1.value=""; pw2.value="";
+    ckey=null; jr={}; pending=null; pendingPw=""; pendingInit={}; ta.value=""; pw1.value=""; pw2.value="";
   }
   function closeJournal(){
     var p=ckey?leaveEditor():Promise.resolve();
@@ -307,33 +334,54 @@ main{width:100%; max-width:420px}
     if(ckey){ if(pending!==null) openEditor(pending); else showList(); }
     else prepLock();
   }
+  function hashPin(pw,salt){
+    return crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveBits"]).then(function(m){
+      return crypto.subtle.deriveBits({name:"PBKDF2",salt:salt,iterations:200000,hash:"SHA-256"},m,256);
+    }).then(b64);
+  }
+  function impDK(s){return crypto.subtle.importKey("raw",unb64(s),{name:"AES-GCM"},false,["encrypt","decrypt"]);}
+  /* the PIN is only a lock: entries are encrypted with a random key kept on the phone, so the PIN can be changed any time without losing entries */
+  function newStore(pw,init,sq){
+    var salt=crypto.getRandomValues(new Uint8Array(16)), raw=crypto.getRandomValues(new Uint8Array(32));
+    return Promise.all([hashPin(pw,salt),impDK(b64(raw))]).then(function(r){
+      return seal(r[1],JSON.stringify(init)).then(function(d){
+        var o={salt:b64(salt),hash:r[0],dk:b64(raw),data:d}; if(sq) o.sq=sq; localStorage.setItem(V3,JSON.stringify(o));
+        setPinMode(); return r[1];
+      });
+    });
+  }
   lgo.addEventListener("click",function(){
     lerr.textContent="";
-    var pw=pw1.value, v=readV();
-    if(!pw){lerr.textContent="Enter a password."; return;}
+    var pw=pw1.value, v3=readV3(), v=readV();
+    if(!pw){lerr.textContent="Enter your PIN."; return;}
     lgo.disabled=true;
     var job;
-    if(!v){
-      if(pw.length<4){lerr.textContent="Use at least 4 characters."; lgo.disabled=false; return;}
-      if(pw!==pw2.value){lerr.textContent="Passwords do not match."; lgo.disabled=false; return;}
-      var salt=crypto.getRandomValues(new Uint8Array(16)), init={};
-      try{var old=JSON.parse(localStorage.getItem(OLDK)||"null"); if(old&&typeof old==="object") init=old;}catch(e){}
-      job=derive(pw,salt).then(function(k){
-        return Promise.all([seal(k,"ok"),seal(k,JSON.stringify(init))]).then(function(r){
-          try{localStorage.setItem(VK,JSON.stringify({salt:b64(salt),check:r[0],data:r[1]})); localStorage.removeItem(OLDK);}catch(e){}
-          ckey=k; jr=init;
-        });
+    if(v3){
+      job=hashPin(pw,unb64(v3.salt)).then(function(h){
+        if(h!==v3.hash) throw "bad";
+        return impDK(v3.dk).then(function(k){return unseal(k,v3.data).then(function(txt){ckey=k; jr=JSON.parse(txt)||{};});});
+      });
+    }else if(v){
+      job=derive(pw,unb64(v.salt)).then(function(k){
+        return unseal(k,v.check).then(function(){return unseal(k,v.data);});
+      }).then(function(txt){
+        var data=JSON.parse(txt)||{};
+        return newStore(pw,data).then(function(k){ckey=k; jr=data; try{localStorage.removeItem(VK);}catch(e){}});
       });
     }else{
-      job=derive(pw,unb64(v.salt)).then(function(k){
-        return unseal(k,v.check).then(function(){return unseal(k,v.data);}).then(function(txt){ckey=k; jr=JSON.parse(txt)||{};});
-      });
+      if(!/^\d{4,8}$/.test(pw)){lerr.textContent="Use 4 to 8 digits."; lgo.disabled=false; return;}
+      if(pw!==pw2.value){lerr.textContent="PINs do not match."; lgo.disabled=false; return;}
+      var init={};
+      try{var old=JSON.parse(localStorage.getItem(OLDK)||"null"); if(old&&typeof old==="object") init=old;}catch(e){}
+      pendingPw=pw; pendingInit=init; sqMode="create"; lgo.disabled=false; openSq(); return;
     }
     job.then(function(){
       lgo.disabled=false; pw1.value=""; pw2.value="";
+      var vn=readV3();
+      if(!vn||!vn.sq){sqMode="force"; openSq(); return;}
       if(pending!==null) openEditor(pending); else showList();
     }).catch(function(){
-      lgo.disabled=false; lerr.textContent=v?"Wrong password.":"Could not create the password.";
+      lgo.disabled=false; lerr.textContent=(v3||v)?"Wrong PIN.":"Could not create the PIN.";
     });
   });
   [pw1,pw2].forEach(function(el){el.addEventListener("keydown",function(e){if(e.key==="Enter") lgo.click();});});
@@ -350,44 +398,105 @@ main{width:100%; max-width:420px}
   $("jnext").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur+1);});});
   $("jnew").addEventListener("click",function(){var t=todayIdx(); openEditor(t<0?0:t);});
   $("jback").addEventListener("click",function(){
-    if(!vEdit.hidden){leaveEditor().then(showList);} else if(!$("vPw").hidden){showList();} else closeJournal();
+    if(!vEdit.hidden){leaveEditor().then(showList);} else if(!$("vPw").hidden||!$("vSq").hidden||!$("vFg").hidden){backInner();} else closeJournal();
   });
   window.addEventListener("popstate",function(){
     if(jp.hidden) return;
     pushed=false;
-    if(!vEdit.hidden||!$("vPw").hidden){
-      (vEdit.hidden?Promise.resolve():leaveEditor()).then(function(){showList(); try{history.pushState({j:1},""); pushed=true;}catch(e){}});
+    if(!vEdit.hidden||!$("vPw").hidden||!$("vSq").hidden||!$("vFg").hidden){
+      (vEdit.hidden?Promise.resolve():leaveEditor()).then(function(){backInner(); try{history.pushState({j:1},""); pushed=true;}catch(e){}});
     } else closeJournal();
   });
-  var cp0=$("cp0"), cp1=$("cp1"), cp2=$("cp2"), cperr=$("cperr");
-  $("jchg").addEventListener("click",function(){
-    cp0.value=""; cp1.value=""; cp2.value=""; cperr.textContent=""; cperr.className="err";
-    view("pw");
+  var cp1=$("cp1"), cp2=$("cp2"), cperr=$("cperr");
+  function openChg(){
+    resetMode=false;
+    $("cpmsg").textContent="Set a new journal PIN (4 to 8 digits). Your entries stay safe."; $("cpgo").textContent="Change PIN";
+    cp1.value=""; cp2.value=""; cperr.textContent=""; cperr.className="err"; view("pw");
+  }
+  function openReset(){
+    resetMode=true;
+    $("cpmsg").textContent=readV3()?"Set a new journal PIN (4 to 8 digits). You do not need the old one. Your entries stay.":"Set a new journal PIN (4 to 8 digits). You do not need the old one. Your old entries stay locked, because only the old PIN can open them."; $("cpgo").textContent="Set new PIN";
+    cp1.value=""; cp2.value=""; cperr.textContent=""; cperr.className="err"; view("pw");
+  }
+  $("jchg").addEventListener("click",openChg);
+  var SQS=["What was the name of your first school?","What is your mother\u2019s maiden name?","What was the name of your first pet?","What town were you born in?","What was your childhood nickname?","What was your first phone model?","Who was your best friend in primary school?","What was the first car you remember in your family?"];
+  function nrm(a){return String(a).toLowerCase().replace(/\s+/g," ").trim();}
+  function fillSel(){[1,2,3].forEach(function(n){var el=$("sqs"+n); if(!el.options.length){SQS.forEach(function(q){var o=document.createElement("option"); o.value=q; o.textContent=q; el.appendChild(o);}); el.selectedIndex=n-1;}});}
+  function openSq(){
+    fillSel(); [1,2,3].forEach(function(n){$("sqa"+n).value="";}); $("sqerr").textContent="";
+    $("sqmsg").textContent=(sqMode==="force"?"Set up your security questions to continue. ":"")+"Choose 3 security questions. If you forget your PIN, 2 correct answers out of 3 let you set a new one. Answers are not case sensitive.";
+    view("sq");
+  }
+  function sqBack(){ if(sqMode==="force"){lockNow(); prepLock();} else if(sqMode==="edit") showList(); else {pendingPw=""; pendingInit={}; prepLock();} }
+  function backInner(){
+    if(!$("vFg").hidden) prepLock();
+    else if(!$("vSq").hidden) sqBack();
+    else if(resetMode&&!$("vPw").hidden){resetMode=false; prepLock();}
+    else showList();
+  }
+  $("sqgo").addEventListener("click",function(){
+    var qs=[], as=[], n, er=$("sqerr"); er.textContent="";
+    for(n=1;n<=3;n++){qs.push($("sqs"+n).value); as.push(nrm($("sqa"+n).value));}
+    if(qs.filter(function(q,i){return qs.indexOf(q)===i;}).length<3){er.textContent="Pick 3 different questions."; return;}
+    if(as.some(function(a){return a.length<2;})){er.textContent="Answer all three questions."; return;}
+    var go=$("sqgo"); go.disabled=true;
+    var salt=crypto.getRandomValues(new Uint8Array(16));
+    Promise.all(as.map(function(a,i){return hashPin(i+":"+a,salt);})).then(function(h){
+      var sq={q:qs,salt:b64(salt),h:h};
+      if(sqMode==="edit"||sqMode==="force"){
+        var v=readV3(); if(!v) throw 0;
+        v.sq=sq; localStorage.setItem(V3,JSON.stringify(v));
+        go.disabled=false; showList(); return;
+      }
+      return newStore(pendingPw,pendingInit,sq).then(function(k){
+        go.disabled=false;
+        try{localStorage.removeItem(OLDK);}catch(e){}
+        if(sqMode==="create"){ckey=k; jr=pendingInit; pendingPw=""; if(pending!==null) openEditor(pending); else showList();}
+        else {pendingPw=""; pendingInit={}; prepLock(); lerr.textContent="New PIN set. Enter it to unlock.";}
+      });
+    }).catch(function(){go.disabled=false; er.textContent="Could not save. Try again.";});
   });
+  $("jsq").addEventListener("click",function(){sqMode="edit"; openSq();});
+  function forgotPin(){
+    var v3=readV3();
+    if(!v3){ openReset(); return; }
+    if(!v3.sq){ lerr.textContent="No security questions were set yet. Unlock once with your PIN and set them first."; return; }
+    [1,2,3].forEach(function(n){$("fgq"+n).textContent=v3.sq.q[n-1]; $("fga"+n).value="";});
+    $("fgerr").textContent=""; view("fg");
+  }
+  $("fggo").addEventListener("click",function(){
+    var v3=readV3(), er=$("fgerr"), go=$("fggo"); er.textContent="";
+    if(!v3||!v3.sq) return;
+    if(fgFails>=5){er.textContent="Too many tries. Wait a minute."; return;}
+    go.disabled=true;
+    var salt=unb64(v3.sq.salt);
+    Promise.all([1,2,3].map(function(n){return hashPin((n-1)+":"+nrm($("fga"+n).value),salt);})).then(function(h){
+      var ok=0; h.forEach(function(x,i){if(x===v3.sq.h[i]) ok++;});
+      go.disabled=false;
+      if(ok>=2){fgFails=0; openReset();}
+      else{fgFails++; er.textContent="Not enough correct answers."; if(fgFails>=5) setTimeout(function(){fgFails=0;},60000);}
+    }).catch(function(){go.disabled=false; er.textContent="Something went wrong.";});
+  });
+  $("lreset").addEventListener("click",forgotPin);
   $("cpgo").addEventListener("click",function(){
     cperr.className="err"; cperr.textContent="";
-    var v=readV(), o=cp0.value, n=cp1.value;
-    if(!v||!ckey) return;
-    if(!o){cperr.textContent="Enter your current password."; return;}
-    if(n.length<4){cperr.textContent="Use at least 4 characters."; return;}
-    if(n!==cp2.value){cperr.textContent="New passwords do not match."; return;}
+    var v=readV3(), n=cp1.value;
+    if(!ckey&&!resetMode) return;
+    if(!/^\d{4,8}$/.test(n)){cperr.textContent="Use 4 to 8 digits."; return;}
+    if(n!==cp2.value){cperr.textContent="New PINs do not match."; return;}
+    if(!v){pendingPw=n; pendingInit={}; sqMode="fresh"; openSq(); return;}
     var go=$("cpgo"); go.disabled=true;
-    derive(o,unb64(v.salt)).then(function(k){return unseal(k,v.check);},function(){throw "bad";})
-    .then(function(){return true;},function(){throw "bad";})
-    .then(function(){
-      var salt=crypto.getRandomValues(new Uint8Array(16));
-      return derive(n,salt).then(function(k){
-        return Promise.all([seal(k,"ok"),seal(k,JSON.stringify(jr))]).then(function(r){
-          localStorage.setItem(VK,JSON.stringify({salt:b64(salt),check:r[0],data:r[1]}));
-          ckey=k;
-        });
-      });
-    }).then(function(){
-      go.disabled=false; cp0.value=""; cp1.value=""; cp2.value="";
-      cperr.className="ok"; cperr.textContent="Password changed \u2713";
-    }).catch(function(e){
+    var salt=crypto.getRandomValues(new Uint8Array(16));
+    (v?hashPin(n,salt).then(function(h){
+      v.salt=b64(salt); v.hash=h;
+      localStorage.setItem(V3,JSON.stringify(v)); setPinMode();
+    }):newStore(n,{}).then(function(){})).then(function(){
+      resetMode=false; cp1.value=""; cp2.value="";
+      cperr.className="ok"; cperr.textContent="PIN changed successfully \u2713";
+      setTimeout(function(){go.disabled=false; cperr.textContent=""; cperr.className="err"; if(ckey) showList(); else prepLock();},1000);
+    }).catch(function(){
       go.disabled=false; cperr.className="err";
-      cperr.textContent=(e==="bad")?"Current password is wrong.":"Could not change the password.";
+      cperr.textContent="Could not change the PIN.";
     });
   });
   jlock.addEventListener("click",function(e){e.stopPropagation(); $("mn").hidden=!$("mn").hidden;});
@@ -405,15 +514,19 @@ main{width:100%; max-width:420px}
       if(main.offsetHeight<=avail) break;
     }
   }
+  /* default PIN for the artifact: on a fresh browser with no journal yet, create it with PIN 0000 */
+  (function(){
+    if(readV3()||readV()||!(window.crypto&&crypto.subtle)) return;
+    var init={};
+    try{var old=JSON.parse(localStorage.getItem(OLDK)||"null"); if(old&&typeof old==="object") init=old;}catch(e){}
+    newStore("0000",init).then(function(){try{localStorage.removeItem(OLDK);}catch(e){}}).catch(function(){});
+  })();
   render(); fit();
   window.addEventListener("resize",fit);
   document.addEventListener("visibilitychange",function(){
     if(document.hidden){ if(!jp.hidden) closeJournal(); }
     else { render(); fit(); }
   });
-  if("serviceWorker" in navigator){
-    window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
-  }
 })();
 </script>
 </body>
