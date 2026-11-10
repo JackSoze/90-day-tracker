@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b1426">
 <link rel="manifest" href="manifest.json">
 <title>90 Day Counter</title>
@@ -45,30 +45,37 @@ main{width:100%; max-width:420px}
 .wk{width:22px; font-size:.7rem; color:var(--muted); text-align:right; flex:none}
 .days{display:grid; grid-template-columns:repeat(7,var(--cell)); justify-content:space-between; flex:1}
 .d{
-  width:var(--cell); height:var(--cell); border-radius:50%; border:0; padding:0; cursor:pointer;
-  background:var(--empty); color:var(--muted); font-weight:600; font-size:calc(var(--cell)*.32); line-height:1; font-family:inherit;
+  width:var(--cell); height:var(--cell); border-radius:50%; border:1.5px solid rgba(255,255,255,.35); box-sizing:border-box; padding:0; cursor:pointer;
+  background:var(--empty); color:#ffffff; font-weight:600; font-size:calc(var(--cell)*.32); line-height:1; font-family:inherit;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
   transition:background .15s, transform .1s;
 }
 .d:active{transform:scale(.9)}
 .d{-webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; touch-action:manipulation}
-.d:focus:not(.today){outline:none}
-.d.on{background:var(--done); color:var(--done-ink)}
-.d small{font-size:calc(var(--cell)*.2); font-weight:500; opacity:.8}
+.d:focus{outline:none}
+.d.on{background:var(--done); color:var(--done-ink); border-color:rgba(255,255,255,.5)}
+.d small{font-size:calc(var(--cell)*.2); font-weight:500; opacity:1}
 .cnt{text-align:center; margin-top:8px; font-size:.95rem; font-weight:600; color:var(--muted)}
 .clr{display:block; margin:10px auto 0; padding:8px 22px; border:1.5px solid var(--muted); border-radius:99px; background:none; color:var(--ink); font:inherit; font-size:.85rem; cursor:pointer}
-.d.mile{box-shadow:0 0 0 2px var(--surface), 0 0 0 3px rgba(232,176,74,.65)}
+.d.mile{border-color:rgba(232,176,74,.95)}
 .dh{text-align:center; font-size:.7rem; font-weight:600; color:var(--muted)}
-.d.today{outline:2px dotted #ff3b3b; outline-offset:1px; background:#2e4472; color:var(--ink); animation:rgbcycle 4s linear infinite}
-@keyframes rgbcycle{0%{outline-color:#ff3b3b}33%{outline-color:#3bff6a}66%{outline-color:#3b8cff}100%{outline-color:#ff3b3b}}
+.d.today{outline:none; border-color:#ff3b3b; background:#2e4472; color:var(--ink); animation:rgbcycle 4s linear infinite}
+@keyframes rgbcycle{0%{border-color:#ff3b3b}33%{border-color:#3bff6a}66%{border-color:#3b8cff}100%{border-color:#ff3b3b}}
 .d svg{width:55%; height:55%}
 .jb{display:block; margin:10px auto 0; padding:8px 22px; border:0; border-radius:99px; background:var(--done); color:var(--done-ink); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer}
 :focus-visible{outline:3px solid var(--ring); outline-offset:2px}
 /* journal page */
-.jp{position:fixed; inset:0; z-index:20; background:var(--bg); overflow-y:auto; padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.jp{position:fixed; inset:0; z-index:20; background:var(--bg); overflow-y:auto; display:flex; flex-direction:column; padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .jp[hidden]{display:none}
-.jpin{max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:12px}
-.jtop{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.jpin{max-width:420px; width:100%; flex:1; min-height:0; margin:0 auto; display:flex; flex-direction:column; gap:12px}
+#vEdit{flex:1; min-height:0}
+#vList{flex:1; min-height:0}
+.v p.ok{color:var(--done); font-weight:600; min-height:1.2em}
+.jtop{position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px}
+.mn{position:absolute; right:0; top:calc(100% + 6px); z-index:5; min-width:190px; background:var(--surface); border:1px solid var(--empty); border-radius:14px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.mn button{display:block; width:100%; text-align:left; border:0; background:none; color:var(--ink); font:inherit; font-size:.95rem; padding:11px 12px; border-radius:10px; cursor:pointer}
+.mn button:active{background:var(--empty)}
+#jlock{font-size:1.3rem; line-height:1; padding:6px 14px}
 .jtop h2{margin:0; font-size:1.2rem; flex:1; text-align:center}
 .tb{border:0; background:var(--empty); color:var(--ink); padding:8px 14px; border-radius:99px; font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; min-width:64px}
 .tb[hidden]{display:block!important; visibility:hidden}
@@ -76,7 +83,7 @@ main{width:100%; max-width:420px}
 .v{display:flex; flex-direction:column; gap:10px}
 .v p{margin:0; font-size:.9rem; color:var(--muted); line-height:1.45}
 .v input,#jt{width:100%; border:1px solid var(--empty); border-radius:14px; padding:12px; font:inherit; font-size:1rem; background:var(--surface); color:var(--ink)}
-#jt{height:42dvh; resize:none; line-height:1.45}
+#jt{flex:1; min-height:120px; resize:none; line-height:1.45}
 .sv{display:flex; align-items:center; justify-content:space-between; gap:12px}
 .sv span{font-size:.85rem; color:var(--done); font-weight:600; min-height:1.2em}
 .sv .pb{padding:10px 28px}
@@ -103,7 +110,8 @@ main{width:100%; max-width:420px}
     <div class="jtop">
       <button type="button" class="tb" id="jback">&lsaquo; Back</button>
       <h2>Journal</h2>
-      <button type="button" class="tb" id="jlock" hidden>Lock</button>
+      <button type="button" class="tb" id="jlock" aria-label="Menu" hidden>&#8942;</button>
+      <div class="mn" id="mn" hidden><button type="button" id="jchg">Change password</button></div>
     </div>
     <div class="v" id="vLock">
       <p id="lmsg"></p>
@@ -115,6 +123,14 @@ main{width:100%; max-width:420px}
     <div class="v" id="vList" hidden>
       <button type="button" class="pb" id="jnew">+ Write today</button>
       <div class="v" id="jlist"></div>
+    </div>
+    <div class="v" id="vPw" hidden>
+      <p>Change your journal password. Your entries stay safe.</p>
+      <input type="password" id="cp0" placeholder="Current password" autocomplete="off">
+      <input type="password" id="cp1" placeholder="New password" autocomplete="off">
+      <input type="password" id="cp2" placeholder="Confirm new password" autocomplete="off">
+      <p class="err" id="cperr"></p>
+      <button type="button" class="pb" id="cpgo">Change password</button>
     </div>
     <div class="v" id="vEdit" hidden>
       <div class="jh"><button type="button" id="jprev" aria-label="Previous day">&lsaquo;</button><span id="jdate"></span><button type="button" id="jnext" aria-label="Next day">&rsaquo;</button></div>
@@ -165,7 +181,7 @@ main{width:100%; max-width:420px}
         b.addEventListener("pointerdown",function(){lp=false; clearTimeout(lt); lt=setTimeout(function(){lp=true; openJournal(i);},500);});
         ["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,function(){clearTimeout(lt);});});
         b.addEventListener("contextmenu",function(e){e.preventDefault();});
-        b.addEventListener("click",function(){ if(lp){lp=false; return;} done[i]=!done[i]; save(); render();});
+        b.addEventListener("click",function(){ if(lp){lp=false; return;} if(i>todayIdx()) return; done[i]=!done[i]; save(); render();});
         days.appendChild(b); btns[i]=b;
       })(i);
     }
@@ -193,6 +209,7 @@ main{width:100%; max-width:420px}
       btns[i].classList.toggle("today",i===ti&&!done[i]);
       if(i===ti) btns[i].setAttribute("aria-current","date"); else btns[i].removeAttribute("aria-current");
       btns[i].classList.toggle("on",done[i]);
+      btns[i].classList.toggle("fut",i>ti);
       var dt=dateOf(i);
       btns[i].innerHTML=done[i]?check:"<span>"+dt.getDate()+"</span><small>"+MON[dt.getMonth()]+"</small>";
       btns[i].setAttribute("aria-label",dt.getDate()+" "+MON[dt.getMonth()]+(done[i]?", done":", not done"));
@@ -212,7 +229,7 @@ main{width:100%; max-width:420px}
   /* ---------- Journal: separate page, password protected, encrypted on this device ---------- */
   var VK="counter90:jv2", OLDK="counter90:journal:v1";
   var enc=new TextEncoder(), dec=new TextDecoder();
-  var ckey=null, jr={}, cur=0, pending=null, saveT=null;
+  var ckey=null, jr={}, cur=0, pending=null, saveT=null, pushed=false;
   var $=function(id){return document.getElementById(id);};
   var jp=$("jp"), vLock=$("vLock"), vList=$("vList"), vEdit=$("vEdit"), ta=$("jt"), pw1=$("pw1"), pw2=$("pw2"), lerr=$("lerr"), lgo=$("lgo"), jlock=$("jlock");
 
@@ -238,8 +255,8 @@ main{width:100%; max-width:420px}
     return seal(ckey,JSON.stringify(jr)).then(function(d){v.data=d; try{localStorage.setItem(VK,JSON.stringify(v));}catch(e){}});
   }
   function view(name){
-    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit";
-    jlock.hidden=name==="lock";
+    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit"; $("vPw").hidden=name!=="pw";
+    jlock.hidden=name!=="list"; $("mn").hidden=true;
   }
   function prepLock(){
     var has=!!readV();
@@ -281,11 +298,12 @@ main{width:100%; max-width:420px}
   }
   function closeJournal(){
     var p=ckey?leaveEditor():Promise.resolve();
-    p.then(function(){lockNow(); jp.hidden=true;});
+    p.then(function(){lockNow(); jp.hidden=true; if(pushed){pushed=false; try{history.back();}catch(e){}}});
   }
   function openJournal(day){
     pending=(typeof day==="number")?day:null;
     jp.hidden=false;
+    if(!pushed){try{history.pushState({j:1},""); pushed=true;}catch(e){}}
     if(ckey){ if(pending!==null) openEditor(pending); else showList(); }
     else prepLock();
   }
@@ -321,14 +339,59 @@ main{width:100%; max-width:420px}
   [pw1,pw2].forEach(function(el){el.addEventListener("keydown",function(e){if(e.key==="Enter") lgo.click();});});
   function setSt(t){$("jst").textContent=t;}
   ta.addEventListener("input",function(){jr[cur+JOFF]=ta.value; setSt("Saving\u2026"); clearTimeout(saveT); saveT=setTimeout(function(){persist().then(function(){setSt("Saved \u2713");});},400);});
-  $("jsave").addEventListener("click",function(){setSt("Saving\u2026"); leaveEditor().then(function(){setSt(""); showList();});});
+  $("jsave").addEventListener("click",function(){
+    var sb=$("jsave"); sb.disabled=true; setSt("Saving\u2026");
+    leaveEditor().then(function(){
+      setSt("Saved \u2713"); sb.textContent="Saved \u2713";
+      setTimeout(function(){sb.disabled=false; sb.textContent="Save"; if(!vEdit.hidden){setSt(""); showList();}},700);
+    });
+  });
   $("jprev").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur-1);});});
   $("jnext").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur+1);});});
   $("jnew").addEventListener("click",function(){var t=todayIdx(); openEditor(t<0?0:t);});
   $("jback").addEventListener("click",function(){
-    if(!vEdit.hidden){leaveEditor().then(showList);} else closeJournal();
+    if(!vEdit.hidden){leaveEditor().then(showList);} else if(!$("vPw").hidden){showList();} else closeJournal();
   });
-  jlock.addEventListener("click",closeJournal);
+  window.addEventListener("popstate",function(){
+    if(jp.hidden) return;
+    pushed=false;
+    if(!vEdit.hidden||!$("vPw").hidden){
+      (vEdit.hidden?Promise.resolve():leaveEditor()).then(function(){showList(); try{history.pushState({j:1},""); pushed=true;}catch(e){}});
+    } else closeJournal();
+  });
+  var cp0=$("cp0"), cp1=$("cp1"), cp2=$("cp2"), cperr=$("cperr");
+  $("jchg").addEventListener("click",function(){
+    cp0.value=""; cp1.value=""; cp2.value=""; cperr.textContent=""; cperr.className="err";
+    view("pw");
+  });
+  $("cpgo").addEventListener("click",function(){
+    cperr.className="err"; cperr.textContent="";
+    var v=readV(), o=cp0.value, n=cp1.value;
+    if(!v||!ckey) return;
+    if(!o){cperr.textContent="Enter your current password."; return;}
+    if(n.length<4){cperr.textContent="Use at least 4 characters."; return;}
+    if(n!==cp2.value){cperr.textContent="New passwords do not match."; return;}
+    var go=$("cpgo"); go.disabled=true;
+    derive(o,unb64(v.salt)).then(function(k){return unseal(k,v.check);},function(){throw "bad";})
+    .then(function(){return true;},function(){throw "bad";})
+    .then(function(){
+      var salt=crypto.getRandomValues(new Uint8Array(16));
+      return derive(n,salt).then(function(k){
+        return Promise.all([seal(k,"ok"),seal(k,JSON.stringify(jr))]).then(function(r){
+          localStorage.setItem(VK,JSON.stringify({salt:b64(salt),check:r[0],data:r[1]}));
+          ckey=k;
+        });
+      });
+    }).then(function(){
+      go.disabled=false; cp0.value=""; cp1.value=""; cp2.value="";
+      cperr.className="ok"; cperr.textContent="Password changed \u2713";
+    }).catch(function(e){
+      go.disabled=false; cperr.className="err";
+      cperr.textContent=(e==="bad")?"Current password is wrong.":"Could not change the password.";
+    });
+  });
+  jlock.addEventListener("click",function(e){e.stopPropagation(); $("mn").hidden=!$("mn").hidden;});
+  document.addEventListener("click",function(){$("mn").hidden=true;});
   $("jb").addEventListener("click",function(){openJournal();});
   document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!jp.hidden) $("jback").click();});
 
