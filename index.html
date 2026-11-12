@@ -97,6 +97,11 @@ main{width:100%; max-width:420px}
 .jh button{border:0; background:var(--empty); color:var(--ink); width:38px; height:38px; border-radius:50%; font-size:1.3rem; line-height:1; cursor:pointer}
 .jh button:disabled{opacity:.35}
 .jh span{flex:1; text-align:center; font-weight:600; font-size:.95rem}
+/* entry card: sized to the entry, read-only, with an Edit button */
+.cd{background:var(--surface); border-radius:18px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
+.cdh{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.cdh b{font-size:.95rem}
+#cbody{white-space:pre-wrap; overflow-wrap:anywhere; max-height:60dvh; overflow-y:auto; font-size:.95rem; line-height:1.5; color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 </style>
 </head>
@@ -116,8 +121,8 @@ main{width:100%; max-width:420px}
     </div>
     <div class="v" id="vLock">
       <p id="lmsg"></p>
-      <input type="text" class="pin" id="pw1" name="jcode1" placeholder="PIN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
-      <input type="text" class="pin" id="pw2" name="jcode2" placeholder="Confirm PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" hidden>
+      <input type="tel" class="pin" id="pw1" name="jcode1" placeholder="PIN" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <input type="tel" class="pin" id="pw2" name="jcode2" placeholder="Confirm PIN" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" hidden>
       <p class="err" id="lerr"></p>
       <button type="button" class="pb" id="lgo"></button>
       <button type="button" class="clr" id="lreset" hidden>Forgot PIN?</button>
@@ -126,10 +131,16 @@ main{width:100%; max-width:420px}
       <button type="button" class="pb" id="jnew">+ Write today</button>
       <div class="v" id="jlist"></div>
     </div>
+    <div class="v" id="vCard" hidden>
+      <div class="cd">
+        <div class="cdh"><b id="cdate"></b><button type="button" class="tb" id="cedit">Edit</button></div>
+        <div id="cbody"></div>
+      </div>
+    </div>
     <div class="v" id="vPw" hidden>
       <p id="cpmsg">Change your journal PIN (4 to 8 digits). Your entries stay safe.</p>
-      <input type="text" class="pin" id="cp1" name="jcode4" placeholder="New PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
-      <input type="text" class="pin" id="cp2" name="jcode5" placeholder="Confirm new PIN" inputmode="numeric" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <input type="tel" class="pin" id="cp1" name="jcode4" placeholder="New PIN" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" enterkeyhint="next" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
+      <input type="tel" class="pin" id="cp2" name="jcode5" placeholder="Confirm new PIN" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
       <p class="err" id="cperr"></p>
       <button type="button" class="pb" id="cpgo">Change PIN</button>
     </div>
@@ -145,7 +156,7 @@ main{width:100%; max-width:420px}
       <button type="button" class="pb" id="sqgo">Save</button>
     </div>
     <div class="v" id="vFg" hidden>
-      <p>Answer your security questions. Get at least 2 of 3 right to set a new PIN.</p>
+      <p>Answer your security questions to set a new PIN.</p>
       <p class="q" id="fgq1"></p>
       <input type="text" id="fga1" name="jfg1" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
       <p class="q" id="fgq2"></p>
@@ -164,15 +175,15 @@ main{width:100%; max-width:420px}
 </div>
 <script>
 (function(){
-  var KEY="counter90:v2", TOTAL=90, MILES=[7,30,60,90], JOFF=5;
+  var KEY="counter90:v3", TOTAL=90, MILES=[7,30,60,90], JOFF=7;
   var done=new Array(TOTAL).fill(false);
   try{
     var s=localStorage.getItem(KEY);
     if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
   }catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
-  // Day 1 is fixed to 9 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
-  var start=new Date(2026,10,9);
+  // Day 1 is fixed to 11 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
+  var start=new Date(2026,10,11);
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DAYN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   function dateOf(i){return new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);}
@@ -213,19 +224,6 @@ main{width:100%; max-width:420px}
   var barEl=document.createElement("div"); barEl.className="bar"; barEl.setAttribute("role","progressbar");
   var fill=document.createElement("i"); barEl.appendChild(fill); grid.appendChild(barEl);
   var cnt=document.createElement("div"); cnt.className="cnt"; grid.appendChild(cnt);
-  // TEMP clear button: delete this block and the .clr CSS rule to remove it (clears day marks only, not the journal)
-  var clr=document.createElement("button"); clr.type="button"; clr.className="clr"; clr.textContent="Clear"; grid.appendChild(clr);
-  var armed=false, tm;
-  clr.addEventListener("click",function(){
-    if(!armed){
-      armed=true; clr.textContent="Tap again to clear";
-      clearTimeout(tm); tm=setTimeout(function(){armed=false; clr.textContent="Clear";},3000);
-    }else{
-      armed=false; clearTimeout(tm); clr.textContent="Clear";
-      done=new Array(TOTAL).fill(false); save(); render();
-    }
-  });
-
   function render(){
     var ti=todayIdx();
     for(var i=0;i<TOTAL;i++){
@@ -252,9 +250,9 @@ main{width:100%; max-width:420px}
   /* ---------- Journal: separate page, password protected, encrypted on this device ---------- */
   var VK="counter90:jv2", OLDK="counter90:journal:v1", V3="counter90:jv3";
   var enc=new TextEncoder(), dec=new TextDecoder();
-  var ckey=null, jr={}, cur=0, pending=null, saveT=null, pushed=false, resetMode=false, sqMode="", pendingPw="", pendingInit={}, fgFails=0;
+  var ckey=null, jr={}, cur=0, pending=null, saveT=null, pushed=false, resetMode=false, sqMode="", pendingPw="", pendingInit={}, fgFails=0, editFrom="list";
   var $=function(id){return document.getElementById(id);};
-  var jp=$("jp"), vLock=$("vLock"), vList=$("vList"), vEdit=$("vEdit"), ta=$("jt"), pw1=$("pw1"), pw2=$("pw2"), lerr=$("lerr"), lgo=$("lgo"), jlock=$("jlock");
+  var jp=$("jp"), vLock=$("vLock"), vList=$("vList"), vEdit=$("vEdit"), vCard=$("vCard"), ta=$("jt"), pw1=$("pw1"), pw2=$("pw2"), lerr=$("lerr"), lgo=$("lgo"), jlock=$("jlock");
 
   function b64(buf){var a=new Uint8Array(buf),s="";for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
   function unb64(s){var t=atob(s),a=new Uint8Array(t.length);for(var i=0;i<t.length;i++)a[i]=t.charCodeAt(i);return a;}
@@ -281,14 +279,23 @@ main{width:100%; max-width:420px}
     return seal(ckey,JSON.stringify(jr)).then(function(d){v.data=d; try{localStorage.setItem(V3,JSON.stringify(v));}catch(e){}});
   }
   function view(name){
-    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit"; $("vPw").hidden=name!=="pw"; $("vSq").hidden=name!=="sq"; $("vFg").hidden=name!=="fg";
+    vLock.hidden=name!=="lock"; vList.hidden=name!=="list"; vEdit.hidden=name!=="edit"; vCard.hidden=name!=="card"; $("vPw").hidden=name!=="pw"; $("vSq").hidden=name!=="sq"; $("vFg").hidden=name!=="fg";
     jlock.hidden=name!=="list"; $("mn").hidden=true;
   }
+  /* PIN fields use the plain Android number pad (digits only). Only an old text password needs the normal keyboard. */
+  function digitsOnly(el){
+    el.addEventListener("input",function(){
+      if(el.type==="tel"){var c=el.value.replace(/\D/g,"").slice(0,8); if(c!==el.value) el.value=c;}
+      if(el===pw1&&el.type==="tel"&&pw2.hidden&&!vLock.hidden&&!lgo.disabled&&el.value.length>=4){autoTry=true; lgo.click();}
+    });
+  }
+  [pw1,pw2,$("cp1"),$("cp2")].forEach(digitsOnly);
   function prepLock(){
     var has=!!(readV3()||readV());
     pw1.value=""; pw2.value=""; lerr.textContent="";
     pw2.hidden=has; $("lreset").hidden=!has;
-    pw1.setAttribute("inputmode",(!has||pinMode())?"numeric":"text");
+    var legacy=!!readV()&&!readV3();
+    pw1.type=legacy?"text":"tel"; pw1.setAttribute("inputmode",legacy?"text":"numeric"); pw1.setAttribute("maxlength",legacy?"64":"8");
     $("lmsg").textContent=has?"Enter your PIN to open the journal.":"Create a PIN (4 to 8 digits) for your journal. Your entries stay on this phone.";
     lgo.textContent=has?"Unlock":"Create PIN";
     view("lock");
@@ -304,12 +311,21 @@ main{width:100%; max-width:420px}
       var h=document.createElement("b"); h.textContent=lbl(i-JOFF);
       var sp=document.createElement("span"); sp.textContent=jr[i];
       b.appendChild(h); b.appendChild(sp);
-      b.addEventListener("click",function(){openEditor(i-JOFF);});
+      b.addEventListener("click",function(){openCard(i-JOFF);});
       list.appendChild(b);
     });
     view("list");
   }
-  function openEditor(i){
+  /* tapping an entry opens a compact card sized to the text, with an Edit button */
+  function openCard(i){
+    cur=i;
+    $("cdate").textContent=lbl(i);
+    $("cbody").textContent=jr[i+JOFF]||"";
+    view("card");
+  }
+  function afterEdit(){ if(jr[cur+JOFF]&&jr[cur+JOFF].trim()) openCard(cur); else showList(); }
+  function openEditor(i,from){
+    if(from) editFrom=from;
     cur=Math.max(-JOFF,Math.min(TOTAL-1,i));
     $("jdate").textContent=lbl(cur);
     ta.value=jr[cur+JOFF]||""; $("jst").textContent="";
@@ -325,13 +341,25 @@ main{width:100%; max-width:420px}
   }
   function closeJournal(){
     var p=ckey?leaveEditor():Promise.resolve();
-    p.then(function(){lockNow(); jp.hidden=true; if(pushed){pushed=false; try{history.back();}catch(e){}}});
+    return p.then(function(){lockNow(); jp.hidden=true; if(pushed){pushed=false; try{history.back();}catch(e){}}});
+  }
+  /* Back always goes to the previous screen; only the home grid (outside the journal) closes the app */
+  function goBack(){
+    var p=vEdit.hidden?Promise.resolve():leaveEditor();
+    return p.then(function(){
+      if(!vEdit.hidden){
+        if(editFrom==="grid") return closeJournal();
+        if(editFrom==="card"&&jr[cur+JOFF]&&jr[cur+JOFF].trim()) openCard(cur); else showList();
+      } else if(!vCard.hidden) showList();
+      else if(!$("vPw").hidden||!$("vSq").hidden||!$("vFg").hidden) backInner();
+      else return closeJournal();
+    });
   }
   function openJournal(day){
     pending=(typeof day==="number")?day:null;
     jp.hidden=false;
     if(!pushed){try{history.pushState({j:1},""); pushed=true;}catch(e){}}
-    if(ckey){ if(pending!==null) openEditor(pending); else showList(); }
+    if(ckey){ if(pending!==null) openEditor(pending,"grid"); else showList(); }
     else prepLock();
   }
   function hashPin(pw,salt){
@@ -350,7 +378,9 @@ main{width:100%; max-width:420px}
       });
     });
   }
+  var autoTry=false;
   lgo.addEventListener("click",function(){
+    var silent=autoTry; autoTry=false;
     lerr.textContent="";
     var pw=pw1.value, v3=readV3(), v=readV();
     if(!pw){lerr.textContent="Enter your PIN."; return;}
@@ -379,9 +409,11 @@ main{width:100%; max-width:420px}
       lgo.disabled=false; pw1.value=""; pw2.value="";
       var vn=readV3();
       if(!vn||!vn.sq){sqMode="force"; openSq(); return;}
-      if(pending!==null) openEditor(pending); else showList();
+      if(pending!==null) openEditor(pending,"grid"); else showList();
     }).catch(function(){
-      lgo.disabled=false; lerr.textContent=(v3||v)?"Wrong PIN.":"Could not create the PIN.";
+      lgo.disabled=false;
+      if(silent&&(v3||v)){ lerr.textContent=""; if(pw1.value!==pw&&pw1.value.length>=4){autoTry=true; lgo.click();} return; }
+      lerr.textContent=(v3||v)?"Wrong PIN.":"Could not create the PIN.";
     });
   });
   [pw1,pw2].forEach(function(el){el.addEventListener("keydown",function(e){if(e.key==="Enter") lgo.click();});});
@@ -391,21 +423,20 @@ main{width:100%; max-width:420px}
     var sb=$("jsave"); sb.disabled=true; setSt("Saving\u2026");
     leaveEditor().then(function(){
       setSt("Saved \u2713"); sb.textContent="Saved \u2713";
-      setTimeout(function(){sb.disabled=false; sb.textContent="Save"; if(!vEdit.hidden){setSt(""); showList();}},700);
+      setTimeout(function(){sb.disabled=false; sb.textContent="Save"; if(!vEdit.hidden){setSt(""); afterEdit();}},700);
     });
   });
   $("jprev").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur-1);});});
   $("jnext").addEventListener("click",function(){leaveEditor().then(function(){openEditor(cur+1);});});
-  $("jnew").addEventListener("click",function(){var t=todayIdx(); openEditor(t<0?0:t);});
+  $("jnew").addEventListener("click",function(){var t=todayIdx(); openEditor(t<0?0:t,"list");});
+  $("cedit").addEventListener("click",function(){openEditor(cur,"card");});
   $("jback").addEventListener("click",function(){
-    if(!vEdit.hidden){leaveEditor().then(showList);} else if(!$("vPw").hidden||!$("vSq").hidden||!$("vFg").hidden){backInner();} else closeJournal();
+    goBack();
   });
   window.addEventListener("popstate",function(){
     if(jp.hidden) return;
     pushed=false;
-    if(!vEdit.hidden||!$("vPw").hidden||!$("vSq").hidden||!$("vFg").hidden){
-      (vEdit.hidden?Promise.resolve():leaveEditor()).then(function(){backInner(); try{history.pushState({j:1},""); pushed=true;}catch(e){}});
-    } else closeJournal();
+    goBack().then(function(){ if(!jp.hidden){try{history.pushState({j:1},""); pushed=true;}catch(e){}} });
   });
   var cp1=$("cp1"), cp2=$("cp2"), cperr=$("cperr");
   function openChg(){
@@ -424,7 +455,7 @@ main{width:100%; max-width:420px}
   function fillSel(){[1,2,3].forEach(function(n){var el=$("sqs"+n); if(!el.options.length){SQS.forEach(function(q){var o=document.createElement("option"); o.value=q; o.textContent=q; el.appendChild(o);}); el.selectedIndex=n-1;}});}
   function openSq(){
     fillSel(); [1,2,3].forEach(function(n){$("sqa"+n).value="";}); $("sqerr").textContent="";
-    $("sqmsg").textContent=(sqMode==="force"?"Set up your security questions to continue. ":"")+"Choose 3 security questions. If you forget your PIN, 2 correct answers out of 3 let you set a new one. Answers are not case sensitive.";
+    $("sqmsg").textContent=(sqMode==="force"?"Set up your security questions to continue. ":"")+"Choose 3 security questions. They let you set a new PIN if you forget it. Answers are not case sensitive.";
     view("sq");
   }
   function sqBack(){ if(sqMode==="force"){lockNow(); prepLock();} else if(sqMode==="edit") showList(); else {pendingPw=""; pendingInit={}; prepLock();} }
@@ -451,7 +482,7 @@ main{width:100%; max-width:420px}
       return newStore(pendingPw,pendingInit,sq).then(function(k){
         go.disabled=false;
         try{localStorage.removeItem(OLDK);}catch(e){}
-        if(sqMode==="create"){ckey=k; jr=pendingInit; pendingPw=""; if(pending!==null) openEditor(pending); else showList();}
+        if(sqMode==="create"){ckey=k; jr=pendingInit; pendingPw=""; if(pending!==null) openEditor(pending,"grid"); else showList();}
         else {pendingPw=""; pendingInit={}; prepLock(); lerr.textContent="New PIN set. Enter it to unlock.";}
       });
     }).catch(function(){go.disabled=false; er.textContent="Could not save. Try again.";});
