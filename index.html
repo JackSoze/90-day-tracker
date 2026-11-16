@@ -35,8 +35,8 @@ body{
 .hd h1{margin:0; font-size:1.4rem; font-weight:700; letter-spacing:.01em}
 .hd p{margin:6px 0 0; font-size:.85rem; color:var(--muted)}
 main{width:100%; max-width:420px}
-.bar{height:12px; border-radius:99px; background:var(--empty); margin:10px 0 0; overflow:hidden}
-.bar i{display:block; height:100%; width:0; background:var(--done); border-radius:99px; transition:width .3s, background-size .3s}
+.bar{height:12px; border-radius:99px; background:var(--empty); margin:10px 0 0; overflow:hidden; display:flex}
+.bar i{display:block; flex:1; height:100%; background:transparent; transition:background .25s}
 .grid{background:var(--surface); border-radius:24px; padding:12px}
 .row{display:flex; align-items:center; gap:8px; margin-bottom:6px}
 .row:last-child{margin-bottom:0}
@@ -62,6 +62,21 @@ main{width:100%; max-width:420px}
 .d svg{width:55%; height:55%}
 .jb{display:block; margin:10px auto 0; padding:8px 22px; border:0; border-radius:99px; background:var(--done); color:var(--done-ink); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer}
 :focus-visible{outline:3px solid var(--ring); outline-offset:2px}
+/* journal + urge buttons, mood popup, urge popup */
+.brow{display:flex; gap:10px; margin-top:10px}
+.brow .jb{flex:1; margin:0; padding:8px 10px; white-space:nowrap}
+.jb.ub{background:transparent; color:var(--ink); border:1.5px solid var(--ring)}
+.ov{position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(5,10,20,.75)}
+.sheet{width:100%; max-width:360px; background:var(--surface); border-radius:22px; padding:18px; display:flex; flex-direction:column; gap:12px; text-align:center}
+.sheet h3{margin:0; font-size:1.1rem}
+.sheet p{margin:0; font-size:.85rem; color:var(--muted); line-height:1.4}
+.moods{display:grid; grid-template-columns:repeat(6,1fr); gap:8px}
+.mb{height:48px; border:0; border-radius:14px; font:inherit; font-size:1.15rem; font-weight:700; color:#0b1426; cursor:pointer; -webkit-tap-highlight-color:transparent}
+.mb.sel{outline:3px solid #fff; outline-offset:2px}
+.scale{display:flex; justify-content:space-between; font-size:.75rem; color:var(--muted)}
+.big{font-size:3.4rem; font-weight:700; line-height:1}
+.lk{border:0; background:none; color:var(--muted); font:inherit; font-size:.9rem; padding:8px; cursor:pointer; text-decoration:underline}
+.lk.rm{color:#ff7a7a}
 /* journal page */
 .jp{position:fixed; inset:0; z-index:20; background:var(--bg); overflow-y:auto; display:flex; flex-direction:column; padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .jp[hidden]{display:none}
@@ -109,8 +124,29 @@ main{width:100%; max-width:420px}
 <main>
   <header class="hd"><h1>90 Days</h1><p id="sub"></p></header>
   <section class="grid" id="grid" aria-label="Days"></section>
-  <button type="button" class="jb" id="jb">&#9998; Journal</button>
+  <div class="brow"><button type="button" class="jb" id="jb">&#9998; Journal</button><button type="button" class="jb ub" id="ub">&#9889; Urges</button></div>
 </main>
+<div class="ov" id="moodOv" hidden>
+  <div class="sheet" role="dialog" aria-label="Mood rating">
+    <h3 id="moodTitle">How was today?</h3>
+    <p>Rate your mood, 0 to 5</p>
+    <div class="moods" id="moodRow"></div>
+    <div class="scale"><span>0 lowest</span><span>5 highest</span></div>
+    <button type="button" class="lk rm" id="moodRm" hidden>Remove tick</button>
+    <button type="button" class="lk" id="moodCancel">Cancel</button>
+  </div>
+</div>
+<div class="ov" id="urgeOv" hidden>
+  <div class="sheet" role="dialog" aria-label="Urge counter">
+    <h3>Urge counter</h3>
+    <p>Tap each time an urge comes. Today:</p>
+    <div class="big" id="uToday">0</div>
+    <button type="button" class="pb" id="uAdd">+ Log an urge</button>
+    <button type="button" class="lk" id="uSub">Undo last</button>
+    <p id="uStats"></p>
+    <button type="button" class="lk" id="uClose">Close</button>
+  </div>
+</div>
 <div class="jp" id="jp" hidden>
   <div class="jpin">
     <div class="jtop">
@@ -182,8 +218,19 @@ main{width:100%; max-width:420px}
     if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
   }catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
-  // Day 1 is fixed to 11 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
-  var start=new Date(2026,10,11);
+  // Day 1 is fixed to 16 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
+  var start=new Date(2026,10,16);
+  // One-time reset: when the start date changes, clear old ticks (journal entries are kept).
+  try{
+    var SK="counter90:start", SV="2026-11-16";
+    if(localStorage.getItem(SK)!==SV){ done=new Array(TOTAL).fill(false); localStorage.setItem(KEY,JSON.stringify(done)); localStorage.setItem(SK,SV); localStorage.removeItem("counter90:mood"); }
+  }catch(e){}
+  var MK="counter90:mood", UK="counter90:urges";
+  /* mood per day: 0 (lowest, red) to 5 (highest, green) */
+  var MCOL=["#e5484d","#f0883e","#e8c33a","#a6d84a","#5fcf5a","#22c55e"];
+  var mood=new Array(TOTAL).fill(null);
+  try{var ms=JSON.parse(localStorage.getItem(MK)||"null"); if(Array.isArray(ms)&&ms.length===TOTAL) mood=ms.map(function(v){return (typeof v==="number"&&v>=0&&v<=5)?v:null;});}catch(e){}
+  function saveMood(){try{localStorage.setItem(MK,JSON.stringify(mood));}catch(e){}}
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DAYN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   function dateOf(i){return new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);}
@@ -215,14 +262,14 @@ main{width:100%; max-width:420px}
         b.addEventListener("pointerdown",function(){lp=false; clearTimeout(lt); lt=setTimeout(function(){lp=true; openJournal(i);},500);});
         ["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,function(){clearTimeout(lt);});});
         b.addEventListener("contextmenu",function(e){e.preventDefault();});
-        b.addEventListener("click",function(){ if(lp){lp=false; return;} if(i>todayIdx()) return; done[i]=!done[i]; save(); render();});
+        b.addEventListener("click",function(){ if(lp){lp=false; return;} if(i>todayIdx()) return; openMood(i);});
         days.appendChild(b); btns[i]=b;
       })(i);
     }
     row.appendChild(lab); row.appendChild(days); grid.appendChild(row);
   }
   var barEl=document.createElement("div"); barEl.className="bar"; barEl.setAttribute("role","progressbar");
-  var fill=document.createElement("i"); barEl.appendChild(fill); grid.appendChild(barEl);
+  var segs=[]; for(var si=0;si<TOTAL;si++){var sg=document.createElement("i"); barEl.appendChild(sg); segs.push(sg);} grid.appendChild(barEl);
   var cnt=document.createElement("div"); cnt.className="cnt"; grid.appendChild(cnt);
   function render(){
     var ti=todayIdx();
@@ -237,10 +284,7 @@ main{width:100%; max-width:420px}
       btns[i].setAttribute("aria-pressed",done[i]);
     }
     var c=done.filter(Boolean).length;
-    fill.style.width=(c/TOTAL*100)+"%";
-    fill.style.backgroundImage="linear-gradient(90deg,#4f8cff 0%,#2dd4bf 100%)";
-    fill.style.backgroundRepeat="no-repeat";
-    fill.style.backgroundSize=(c?10000/(c/TOTAL*100):100)+"% 100%";
+    for(var k=0;k<TOTAL;k++){ segs[k].style.background=done[k]?(mood[k]!==null?MCOL[mood[k]]:"#2dd4bf"):"transparent"; }
     cnt.textContent=c+" of "+TOTAL+" days";
     barEl.setAttribute("aria-valuenow",c); barEl.setAttribute("aria-valuemax",TOTAL);
     var s0=dateOf(0), s1=dateOf(TOTAL-1);
@@ -434,6 +478,7 @@ main{width:100%; max-width:420px}
     goBack();
   });
   window.addEventListener("popstate",function(){
+    if(modalEl){ closeModal(true); return; }
     if(jp.hidden) return;
     pushed=false;
     goBack().then(function(){ if(!jp.hidden){try{history.pushState({j:1},""); pushed=true;}catch(e){}} });
@@ -534,6 +579,48 @@ main{width:100%; max-width:420px}
   document.addEventListener("click",function(){$("mn").hidden=true;});
   $("jb").addEventListener("click",function(){openJournal();});
   document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!jp.hidden) $("jback").click();});
+
+  /* ---------- Mood popup + urge counter (back button closes the popup first) ---------- */
+  var modalEl=null, mpushed=false, moodDay=-1;
+  function openModal(el){ el.hidden=false; modalEl=el; try{history.pushState({m:1},""); mpushed=true;}catch(e){} }
+  function closeModal(viaPop){
+    if(!modalEl) return;
+    modalEl.hidden=true; modalEl=null;
+    if(mpushed&&!viaPop){mpushed=false; try{history.back();}catch(e){}} else mpushed=false;
+  }
+  ["moodOv","urgeOv"].forEach(function(id){$(id).addEventListener("click",function(e){ if(e.target===this) closeModal(); });});
+  var mbtns=[];
+  MCOL.forEach(function(c,n){
+    var b=document.createElement("button"); b.type="button"; b.className="mb"; b.textContent=n; b.style.background=c; b.setAttribute("aria-label","Mood "+n+" of 5");
+    b.addEventListener("click",function(){ done[moodDay]=true; mood[moodDay]=n; save(); saveMood(); render(); closeModal(); });
+    $("moodRow").appendChild(b); mbtns.push(b);
+  });
+  function openMood(i){
+    moodDay=i;
+    $("moodTitle").textContent="How was "+lbl(i)+"?";
+    mbtns.forEach(function(b,n){b.classList.toggle("sel",done[i]&&mood[i]===n);});
+    $("moodRm").hidden=!done[i];
+    openModal($("moodOv"));
+  }
+  $("moodRm").addEventListener("click",function(){ done[moodDay]=false; mood[moodDay]=null; save(); saveMood(); render(); closeModal(); });
+  $("moodCancel").addEventListener("click",function(){closeModal();});
+  var urges={};
+  try{var us=JSON.parse(localStorage.getItem(UK)||"null"); if(us&&typeof us==="object") urges=us;}catch(e){}
+  function saveUrges(){try{localStorage.setItem(UK,JSON.stringify(urges));}catch(e){}}
+  function dkey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+  function updateUrge(){
+    var now=new Date(), today=urges[dkey(now)]||0, week=0, total=0, k, j;
+    for(k in urges) total+=urges[k]||0;
+    for(j=0;j<7;j++){ week+=urges[dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-j))]||0; }
+    $("uToday").textContent=today;
+    $("uStats").textContent="Last 7 days: "+week+"  \u00b7  All time: "+total;
+    $("ub").innerHTML="&#9889; Urges \u00b7 "+today;
+  }
+  $("ub").addEventListener("click",function(){ updateUrge(); openModal($("urgeOv")); });
+  $("uAdd").addEventListener("click",function(){ var t=dkey(new Date()); urges[t]=(urges[t]||0)+1; saveUrges(); updateUrge(); });
+  $("uSub").addEventListener("click",function(){ var t=dkey(new Date()); if(urges[t]>0){ urges[t]--; if(!urges[t]) delete urges[t]; saveUrges(); updateUrge(); } });
+  $("uClose").addEventListener("click",function(){closeModal();});
+  updateUrge();
 
   function fit(){
     var main=document.querySelector("main"), cs=getComputedStyle(document.body);
