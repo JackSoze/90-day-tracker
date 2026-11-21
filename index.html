@@ -139,7 +139,7 @@ main{width:100%; max-width:420px}
 <div class="ov" id="urgeOv" hidden>
   <div class="sheet" role="dialog" aria-label="Urge counter">
     <h3>Urge counter</h3>
-    <p>Tap each time an urge comes. Today:</p>
+    <p>Tap each time an urge comes. Total so far:</p>
     <div class="big" id="uToday">0</div>
     <button type="button" class="pb" id="uAdd">+ Log an urge</button>
     <button type="button" class="lk" id="uSub">Undo last</button>
@@ -192,7 +192,7 @@ main{width:100%; max-width:420px}
       <button type="button" class="pb" id="sqgo">Save</button>
     </div>
     <div class="v" id="vFg" hidden>
-      <p>Answer your security questions to set a new PIN.</p>
+      <p id="fgmsg">Answer your security questions to set a new PIN.</p>
       <p class="q" id="fgq1"></p>
       <input type="text" id="fga1" name="jfg1" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
       <p class="q" id="fgq2"></p>
@@ -201,6 +201,7 @@ main{width:100%; max-width:420px}
       <input type="text" id="fga3" name="jfg3" placeholder="Answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other">
       <p class="err" id="fgerr"></p>
       <button type="button" class="pb" id="fggo">Verify</button>
+      <button type="button" class="clr" id="fgerase">Can’t answer? Reset and erase</button>
     </div>
     <div class="v" id="vEdit" hidden>
       <div class="jh"><button type="button" id="jprev" aria-label="Previous day">&lsaquo;</button><span id="jdate"></span><button type="button" id="jnext" aria-label="Next day">&rsaquo;</button></div>
@@ -218,11 +219,11 @@ main{width:100%; max-width:420px}
     if(s){var a=JSON.parse(s); if(Array.isArray(a)&&a.length===TOTAL) done=a.map(Boolean);}
   }catch(e){}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
-  // Day 1 is fixed to 16 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
-  var start=new Date(2026,10,16);
+  // Day 1 is fixed to 22 Nov 2026 (restarted). Change the numbers below (year, month 0-11, day) to move it.
+  var start=new Date(2026,10,22);
   // One-time reset: when the start date changes, clear old ticks (journal entries are kept).
   try{
-    var SK="counter90:start", SV="2026-11-16";
+    var SK="counter90:start", SV="2026-11-22";
     if(localStorage.getItem(SK)!==SV){ done=new Array(TOTAL).fill(false); localStorage.setItem(KEY,JSON.stringify(done)); localStorage.setItem(SK,SV); localStorage.removeItem("counter90:mood"); }
   }catch(e){}
   var MK="counter90:mood", UK="counter90:urges";
@@ -536,10 +537,22 @@ main{width:100%; max-width:420px}
   function forgotPin(){
     var v3=readV3();
     if(!v3){ openReset(); return; }
-    if(!v3.sq){ lerr.textContent="No security questions were set yet. Unlock once with your PIN and set them first."; return; }
-    [1,2,3].forEach(function(n){$("fgq"+n).textContent=v3.sq.q[n-1]; $("fga"+n).value="";});
+    var hasSq=!!v3.sq;
+    [1,2,3].forEach(function(n){ $("fgq"+n).hidden=!hasSq; $("fga"+n).hidden=!hasSq; $("fgq"+n).textContent=hasSq?v3.sq.q[n-1]:""; $("fga"+n).value=""; });
+    $("fggo").hidden=!hasSq;
+    $("fgmsg").textContent=hasSq?"Answer your security questions to set a new PIN.":"No security questions were set for this journal.";
+    eraseArmed=false; $("fgerase").textContent="Can\u2019t answer? Reset and erase";
     $("fgerr").textContent=""; view("fg");
   }
+  /* Reset and erase: for someone who cannot answer. Wipes the journal, then they create a new PIN (and new security questions). */
+  var eraseArmed=false;
+  $("fgerase").addEventListener("click",function(){
+    var b=$("fgerase"), er=$("fgerr");
+    if(!eraseArmed){ eraseArmed=true; b.textContent="Tap again to erase all entries"; er.textContent="This deletes every journal entry so a new PIN can be set. It cannot be undone."; return; }
+    eraseArmed=false; b.textContent="Can\u2019t answer? Reset and erase"; er.textContent="";
+    try{ localStorage.removeItem(V3); localStorage.removeItem(VK); localStorage.removeItem(OLDK); }catch(e){}
+    lockNow(); prepLock(); lerr.textContent="Journal erased. Create a new PIN.";
+  });
   $("fggo").addEventListener("click",function(){
     var v3=readV3(), er=$("fgerr"), go=$("fggo"); er.textContent="";
     if(!v3||!v3.sq) return;
@@ -604,21 +617,26 @@ main{width:100%; max-width:420px}
   }
   $("moodRm").addEventListener("click",function(){ done[moodDay]=false; mood[moodDay]=null; save(); saveMood(); render(); closeModal(); });
   $("moodCancel").addEventListener("click",function(){closeModal();});
-  var urges={};
-  try{var us=JSON.parse(localStorage.getItem(UK)||"null"); if(us&&typeof us==="object") urges=us;}catch(e){}
-  function saveUrges(){try{localStorage.setItem(UK,JSON.stringify(urges));}catch(e){}}
-  function dkey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+  /* urges are one cumulative total (not per day). Old per-day counts are summed once on first run. */
+  var UTK="counter90:urgeTotal", utotal=0;
+  try{
+    var uv=localStorage.getItem(UTK);
+    if(uv!==null){ utotal=parseInt(uv,10)||0; }
+    else{
+      var us=JSON.parse(localStorage.getItem(UK)||"null");
+      if(us&&typeof us==="object"){ for(var k in us) utotal+=us[k]||0; }
+      localStorage.setItem(UTK,String(utotal));
+    }
+  }catch(e){}
+  function saveUrges(){try{localStorage.setItem(UTK,String(utotal));}catch(e){}}
   function updateUrge(){
-    var now=new Date(), today=urges[dkey(now)]||0, week=0, total=0, k, j;
-    for(k in urges) total+=urges[k]||0;
-    for(j=0;j<7;j++){ week+=urges[dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-j))]||0; }
-    $("uToday").textContent=today;
-    $("uStats").textContent="Last 7 days: "+week+"  \u00b7  All time: "+total;
-    $("ub").innerHTML="&#9889; Urges \u00b7 "+today;
+    $("uToday").textContent=utotal;
+    $("uStats").textContent="";
+    $("ub").innerHTML="&#9889; Urges \u00b7 "+utotal;
   }
   $("ub").addEventListener("click",function(){ updateUrge(); openModal($("urgeOv")); });
-  $("uAdd").addEventListener("click",function(){ var t=dkey(new Date()); urges[t]=(urges[t]||0)+1; saveUrges(); updateUrge(); });
-  $("uSub").addEventListener("click",function(){ var t=dkey(new Date()); if(urges[t]>0){ urges[t]--; if(!urges[t]) delete urges[t]; saveUrges(); updateUrge(); } });
+  $("uAdd").addEventListener("click",function(){ utotal++; saveUrges(); updateUrge(); });
+  $("uSub").addEventListener("click",function(){ if(utotal>0){ utotal--; saveUrges(); updateUrge(); } });
   $("uClose").addEventListener("click",function(){closeModal();});
   updateUrge();
 
